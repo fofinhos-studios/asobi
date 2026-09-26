@@ -89,6 +89,38 @@ describe("GameCartridge", () => {
     expect(view.getByText("Adventure")).toBeTruthy();
   });
 
+  test("uses the cover as a background when a saved hero image fails", async () => {
+    const view = render(<GameCartridge game={game} />);
+    const hero = view.container.querySelector(
+      ".game-cartridge__hero",
+    ) as HTMLImageElement;
+
+    fireEvent.error(hero);
+
+    await waitFor(() => expect(hero.getAttribute("src")).toBe(game.cover_url));
+    fireEvent.load(hero);
+    fireEvent.load(view.getByAltText("Hollow Knight cover"));
+    fireEvent.load(view.getByAltText("Hollow Knight logo"));
+
+    await waitFor(() =>
+      expect(
+        view.container
+          .querySelector(".game-cartridge")
+          ?.getAttribute("aria-busy"),
+      ).toBe("false"),
+    );
+  });
+
+  test("uses the cover as a background when no hero was saved", () => {
+    const view = render(<GameCartridge game={{ ...game, hero_url: "" }} />);
+
+    expect(
+      view.container
+        .querySelector(".game-cartridge__hero")
+        ?.getAttribute("src"),
+    ).toBe(game.cover_url);
+  });
+
   test("shows calendar sessions as a clock icon and their planned hours", () => {
     const view = render(
       <GameCartridge game={game} plannedHours={2.5} variant="calendar" />,

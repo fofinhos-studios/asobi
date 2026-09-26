@@ -19,18 +19,6 @@ function previewCoverUrl(coverUrl: string): string {
   return coverUrl.replace("/t_thumb/", "/t_cover_small/");
 }
 
-function getArtworkUrls(game: ListGame): string[] {
-  return [
-    ...new Set(
-      [
-        game.hero_url,
-        game.cover_url ? previewCoverUrl(game.cover_url) : null,
-        game.logo_url,
-      ].filter((url): url is string => Boolean(url)),
-    ),
-  ];
-}
-
 export function GameCartridge({
   game,
   plannedHours,
@@ -40,7 +28,22 @@ export function GameCartridge({
   const primaryHours = plannedHours ?? getSelectedGameHours(game);
   const primaryLabel =
     plannedHours === undefined ? "PLAY TIME" : "TIME TO PLAY";
-  const artworkUrls = getArtworkUrls(game);
+  const coverUrl = game.cover_url ? previewCoverUrl(game.cover_url) : "";
+  const heroFallbackUrl =
+    game.cover_url?.replace("/t_thumb/", "/t_1080p/") ?? "";
+  const [failedArtwork, setFailedArtwork] = useState<string[]>([]);
+  const heroUrl = [game.hero_url, heroFallbackUrl]
+    .filter((url): url is string => Boolean(url))
+    .find((url) => !failedArtwork.includes(url));
+  const logoUrl =
+    game.logo_url && !failedArtwork.includes(game.logo_url)
+      ? game.logo_url
+      : "";
+  const artworkUrls = [
+    ...new Set(
+      [heroUrl, coverUrl, logoUrl].filter((url): url is string => Boolean(url)),
+    ),
+  ];
   const [settledArtwork, setSettledArtwork] = useState<string[]>([]);
   const isReady =
     game.hltb_status !== "loading" &&
@@ -48,6 +51,12 @@ export function GameCartridge({
 
   const markArtworkSettled = (url: string) => {
     setSettledArtwork((current) =>
+      current.includes(url) ? current : [...current, url],
+    );
+  };
+  const markArtworkFailed = (url: string) => {
+    markArtworkSettled(url);
+    setFailedArtwork((current) =>
       current.includes(url) ? current : [...current, url],
     );
   };
@@ -73,30 +82,30 @@ export function GameCartridge({
         </output>
       )}
 
-      {game.hero_url && (
+      {heroUrl && (
         <img
           aria-hidden="true"
           class="game-cartridge__hero"
-          src={game.hero_url}
+          src={heroUrl}
           alt=""
           loading="lazy"
           decoding="async"
-          onLoad={() => markArtworkSettled(game.hero_url)}
-          onError={() => markArtworkSettled(game.hero_url)}
+          onLoad={() => markArtworkSettled(heroUrl)}
+          onError={() => markArtworkFailed(heroUrl)}
         />
       )}
       <div class="game-cartridge__wash" aria-hidden="true" />
 
       <div class="game-cartridge__cover-frame" aria-hidden={!isReady}>
-        {game.cover_url ? (
+        {coverUrl && !failedArtwork.includes(coverUrl) ? (
           <img
             class="game-cartridge__cover"
-            src={previewCoverUrl(game.cover_url)}
+            src={coverUrl}
             alt={`${game.name} cover`}
             loading="lazy"
             decoding="async"
-            onLoad={() => markArtworkSettled(previewCoverUrl(game.cover_url))}
-            onError={() => markArtworkSettled(previewCoverUrl(game.cover_url))}
+            onLoad={() => markArtworkSettled(coverUrl)}
+            onError={() => markArtworkFailed(coverUrl)}
           />
         ) : (
           <div class="game-cartridge__cover game-cartridge__cover--empty">
@@ -107,15 +116,15 @@ export function GameCartridge({
 
       <div class="game-cartridge__content" aria-hidden={!isReady}>
         <div class="game-cartridge__identity">
-          {game.logo_url ? (
+          {logoUrl ? (
             <img
               class="game-cartridge__logo"
-              src={game.logo_url}
+              src={logoUrl}
               alt={`${game.name} logo`}
               loading="lazy"
               decoding="async"
-              onLoad={() => markArtworkSettled(game.logo_url)}
-              onError={() => markArtworkSettled(game.logo_url)}
+              onLoad={() => markArtworkSettled(logoUrl)}
+              onError={() => markArtworkFailed(logoUrl)}
             />
           ) : null}
           <h3 class="game-cartridge__title planner-backlog-row__title">

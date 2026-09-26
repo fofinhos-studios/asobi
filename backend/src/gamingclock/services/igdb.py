@@ -9,7 +9,13 @@ from typing import ClassVar
 
 import httpx
 
-from gamingclock.models.catalog import CatalogGame, CatalogGameVariant, IGDBGameType, release_year_from_epoch
+from gamingclock.models.catalog import (
+    CatalogGame,
+    CatalogGameVariant,
+    GameArtwork,
+    IGDBGameType,
+    release_year_from_epoch,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -150,6 +156,55 @@ class IGDBService:
             (time.perf_counter() - started_at) * 1000,
         )
         return game
+
+    async def get_artwork(self, igdb_id: int) -> GameArtwork:
+        """Provide a game-specific cover and landscape image when SteamGridDB lacks one."""
+        if not self._is_configured():
+            return GameArtwork()
+
+        client_id, token = await self._get_auth_headers()
+        response = await self._http_client.post(
+            "https://api.igdb.com/v4/games",
+            headers={"Client-ID": client_id, "Authorization": f"Bearer {token}"},
+            content=(
+                "fields cover.url,artworks.url,artworks.width,artworks.height,"
+                "screenshots.url,screenshots.width,screenshots.height;"
+                f"where id = {igdb_id};"
+                "limit 1;"
+            ),
+        )
+        response.raise_for_status()
+        games = response.json()
+        if not games:
+            return GameArtwork()
+
+        game = games[0]
+        images = [*(game.get("artworks") or []), *(game.get("screenshots") or [])]
+        landscape = next(
+            (
+                image
+                for image in images
+                if isinstance(image, dict)
+                and isinstance(image.get("width"), int)
+                and isinstance(image.get("height"), int)
+                and image["width"] >= image["height"]
+            ),
+            None,
+        )
+        cover = game.get("cover") or {}
+        return GameArtwork(
+            cover_url=self._artwork_image_url(cover, "cover_big"),
+            hero_url=self._artwork_image_url(landscape, "1080p"),
+        )
+
+    @staticmethod
+    def _artwork_image_url(image: dict | None, size: str) -> str:
+        url = image.get("url") if isinstance(image, dict) else None
+        if not isinstance(url, str):
+            return ""
+        if url.startswith("//"):
+            url = f"https:{url}"
+        return url.replace("/t_thumb/", f"/t_{size}/")
 
     async def popular_games(self, limit: int = 20) -> list[CatalogGame]:
         """Blend current, recent-release, and all-time games for cache warming."""

@@ -86,7 +86,7 @@ async def resolve_games(request: ResolveGamesRequest) -> ResolveGamesResponse:
 async def get_game_artwork(response: Response, igdb_id: int, name: str) -> GameArtwork:
     """Return card artwork through a cacheable, game-specific URL."""
     response.headers["Cache-Control"] = "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
-    return await _get_steamgriddb_artwork(name)
+    return await _get_game_artwork(name, igdb_id)
 
 
 @router.post("/artwork", response_model=GameArtwork)
@@ -94,7 +94,7 @@ async def get_game_artwork_legacy(request: ResolveGameRequest) -> GameArtwork:
     """Keep the original endpoint available while clients migrate to cacheable GETs."""
     if not request.name:
         return GameArtwork()
-    return await _get_steamgriddb_artwork(request.name)
+    return await _get_game_artwork(request.name, request.igdb_id)
 
 
 @router.get("/internal/warm-popular", response_model=CacheWarmResult)
@@ -106,7 +106,7 @@ async def warm_popular_cache(request: Request) -> CacheWarmResult:
 
 async def _enrich_catalog_game(catalog_game: CatalogGame) -> ListGame:
     artwork, hltb_results = await asyncio.gather(
-        _get_steamgriddb_artwork(catalog_game.name),
+        _get_game_artwork(catalog_game.name, catalog_game.igdb_id),
         hltb_service.search(catalog_game.name),
     )
     if not hltb_results:
@@ -160,6 +160,22 @@ async def _resolve_request(request: ResolveGameRequest) -> ListGame:
         if isinstance(catalog_game, dict):
             catalog_game = CatalogGame.model_validate(catalog_game)
     return await _enrich_catalog_game(catalog_game)
+
+
+async def _get_game_artwork(game_name: str, igdb_id: int) -> GameArtwork:
+    artwork = await _get_steamgriddb_artwork(game_name)
+    if igdb_id <= 0 or (artwork.cover_url and artwork.hero_url):
+        return artwork
+    try:
+        fallback = await igdb_service.get_artwork(igdb_id)
+    except (httpx.HTTPError, KeyError, TypeError, ValueError, RuntimeError):
+        logger.warning("IGDB artwork lookup failed")
+        return artwork
+    return GameArtwork(
+        cover_url=artwork.cover_url or fallback.cover_url,
+        logo_url=artwork.logo_url,
+        hero_url=artwork.hero_url or fallback.hero_url,
+    )
 
 
 async def _get_steamgriddb_artwork(game_name: str) -> GameArtwork:
