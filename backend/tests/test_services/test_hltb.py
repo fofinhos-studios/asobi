@@ -80,7 +80,8 @@ async def test_search_maps_and_sorts_library_results():
 
 
 @pytest.mark.asyncio
-async def test_web_client_uses_current_hltb_search_endpoints_and_maps_seconds_to_hours():
+@pytest.mark.parametrize("with_proof_fields", [True, False])
+async def test_web_client_uses_current_hltb_search_endpoints_and_maps_seconds_to_hours(with_proof_fields: bool):
     requests: list[httpx.Request] = []
 
     async def handler(request: httpx.Request) -> httpx.Response:
@@ -88,12 +89,16 @@ async def test_web_client_uses_current_hltb_search_endpoints_and_maps_seconds_to
         if request.url.path == "/api/search/site/init":
             return httpx.Response(
                 200,
-                json={"token": "token", "hpKey": "proof", "hpVal": "value"},
+                json={"token": "token", **({"hpKey": "proof", "hpVal": "value"} if with_proof_fields else {})},
             )
         if request.url.path == "/api/search/site":
             assert request.headers["x-auth-token"] == "token"
-            assert request.headers["x-hp-key"] == "proof"
-            assert request.headers["x-hp-val"] == "value"
+            if with_proof_fields:
+                assert request.headers["x-hp-key"] == "proof"
+                assert request.headers["x-hp-val"] == "value"
+            else:
+                assert "x-hp-key" not in request.headers
+                assert "x-hp-val" not in request.headers
             assert loads(request.content) == {
                 "searchType": "games",
                 "searchTerms": ["Hollow", "Knight"],
@@ -122,7 +127,7 @@ async def test_web_client_uses_current_hltb_search_endpoints_and_maps_seconds_to
                     "randomizer": 0,
                 },
                 "useCache": True,
-                "proof": "value",
+                **({"proof": "value"} if with_proof_fields else {}),
             }
             return httpx.Response(
                 200,
