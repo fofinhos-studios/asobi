@@ -1,9 +1,10 @@
-import { ArrowDownIcon, GameControllerIcon } from "@phosphor-icons/react";
+import { GameControllerIcon } from "@phosphor-icons/react";
 import { AsobiBrand } from "../components/asobi-brand";
 import { BacklogManager } from "../components/backlog-manager";
 import { GameRoute } from "../components/game-route";
 import { PlannerControls } from "../components/planner-controls";
 import { PlannerGamesStep } from "../components/planner-games-step";
+import { PlannerTabs } from "../components/planner-tabs";
 import { ScheduleView } from "../components/schedule-view";
 import { usePlanner } from "../hooks/use-planner";
 
@@ -12,21 +13,11 @@ export function HomePage() {
   const { t } = p;
   return (
     <div class="asobi-shell" id="top">
-      <a href="#library" class="skip-link">
+      <a href="#planner" class="skip-link">
         {t.app.skipToPlanner}
       </a>
       <header class="asobi-header">
         <AsobiBrand />
-        <nav aria-label={t.asobi.navigation}>
-          <a href="#library">
-            {t.asobi.library}
-            <ArrowDownIcon aria-hidden="true" />
-          </a>
-          <a href="#schedule">
-            {t.asobi.schedule}
-            <ArrowDownIcon aria-hidden="true" />
-          </a>
-        </nav>
         <label class="asobi-language">
           <span class="sr-only">{t.language.label}</span>
           <select
@@ -40,23 +31,11 @@ export function HomePage() {
           </select>
         </label>
       </header>
-      <main id="planner">
-        <PlannerControls
-          availability={p.availability}
-          startDate={p.startDate}
-          planningMode={p.planningMode}
-          finishByDate={p.finishByDate}
-          maxSessionHours={p.maxSessionHours}
-          algorithm={p.algorithm}
-          onAvailability={p.handleSetAvailability}
-          onStartDate={p.handleStartDateChange}
-          onPlanningMode={p.handlePlanningModeChange}
-          onFinishByDate={p.handleFinishByDateChange}
-          onMaxSessionHours={p.handleMaxSessionHoursChange}
-          onAlgorithm={p.handleAlgorithmChange}
-        />
-        <div class="asobi-dashboard">
-          <section
+      <main id="planner" tabIndex={-1}>
+        <PlannerTabs
+          activeTab={p.activeTab}
+          onChange={p.setActiveTab}
+          games=<section
             class="asobi-library"
             id="library"
             tabIndex={-1}
@@ -91,35 +70,62 @@ export function HomePage() {
               onRemoveGroup={p.removeGroup}
             />
           </section>
-          <GameRoute
-            games={p.games}
-            schedule={p.schedule}
-            algorithm={p.algorithm}
-            isGenerating={p.isGenerating}
-            error={p.actionError}
-            onReorder={p.reorderGames}
-          />
-        </div>
-        {p.excludedGames.length > 0 && (
-          <p class="planner-inline-notice">
-            {t.schedule.excludedGames(
-              p.excludedGames.map((game) => game.name).join(", "),
-              p.excludedGames.length,
-            )}
-          </p>
-        )}
-        {p.schedule && (
-          <div class="asobi-agenda" id="agenda">
-            <ScheduleView
-              schedule={p.schedule}
-              games={p.games}
-              finishByDate={p.finishByDate}
-              onScheduleChange={p.handleScheduleChange}
-              onDownloadIcal={p.handleDownloadIcal}
-              onCopyCalendarUrl={p.handleCopyCalendarUrl}
-            />
-          </div>
-        )}
+          availability={
+            <>
+              <h1 class="asobi-step-heading">{t.workflow.settingsTitle}</h1>
+              <PlannerControls
+                availability={p.availability}
+                startDate={p.startDate}
+                planningMode={p.planningMode}
+                finishByDate={p.finishByDate}
+                maxSessionHours={p.maxSessionHours}
+                algorithm={p.algorithm}
+                onAvailability={p.handleSetAvailability}
+                onStartDate={p.handleStartDateChange}
+                onPlanningMode={p.handlePlanningModeChange}
+                onFinishByDate={p.handleFinishByDateChange}
+                onMaxSessionHours={p.handleMaxSessionHoursChange}
+                onAlgorithm={p.handleAlgorithmChange}
+              />
+            </>
+          }
+          schedule={
+            <>
+              <h1 class="asobi-step-heading">{t.workflow.resultTitle}</h1>
+              <p class="asobi-step-hint">{t.workflow.resultHint}</p>
+              <div class="asobi-result">
+                <GameRoute
+                  games={p.games}
+                  schedule={p.schedule}
+                  algorithm={p.algorithm}
+                  isGenerating={p.isGenerating}
+                  error={p.actionError}
+                  onReorder={p.reorderGames}
+                />
+                {p.excludedGames.length > 0 && (
+                  <p class="planner-inline-notice">
+                    {t.schedule.excludedGames(
+                      p.excludedGames.map((game) => game.name).join(", "),
+                      p.excludedGames.length,
+                    )}
+                  </p>
+                )}
+                {p.schedule && (
+                  <div class="asobi-agenda" id="agenda">
+                    <ScheduleView
+                      schedule={p.schedule}
+                      games={p.games}
+                      finishByDate={p.finishByDate}
+                      onScheduleChange={p.handleScheduleChange}
+                      onDownloadIcal={p.handleDownloadIcal}
+                      onCopyCalendarUrl={p.handleCopyCalendarUrl}
+                    />
+                  </div>
+                )}
+              </div>
+            </>
+          }
+        />
       </main>
       <footer class="asobi-footer">
         <span>

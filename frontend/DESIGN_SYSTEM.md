@@ -6,15 +6,15 @@ The visual system adapts Hon’s numbered image cards, flat controls, compact/ex
 
 - `frontend/src/styles/design-system.css` owns fonts, primitive/semantic tokens, component rules, states, motion and responsive layouts. `index.css` imports Tailwind and this file.
 - `GameCartridge` renders compact game spines with background artwork and no platform information. Library and route order markers share circular station tokens; `game-visuals.ts` assigns stable ID-based pastel tokens and matches session names only when unique.
-- `PlannerControls` and `GameRoute` compose the dashboard with the existing library and `ScheduleView`. `use-planner.ts` owns application operations and persistence.
+- `PlannerTabs` presents Pick games → Schedule → Result, with keyboard navigation and back/continue controls. Panels stay mounted to preserve drafts. `PlannerControls` owns the second panel; `GameRoute` and `ScheduleView` show the final result. `use-planner.ts` owns application operations and persistence.
 - `/?design-system` loads only in development. Its examples include real library/route/agenda components, editable/reorderable samples, missing/broken images and long titles.
 - General Sans, Martian Mono and their licenses live in `public/fonts`. The 遊 SVG contains paths from Noto Sans JP; it requires no Japanese font on the device.
 
-Breakpoints live together at the end of the stylesheet (480/768/1024/1200px). CSS custom properties cannot be used directly in media conditions, so these are documented literal thresholds. The desktop grid is 60/40 with a maximum width of 1440px. Controls use 1, 2 or 4 columns. Ordinary interactive targets are at least 44px; the dense timetable has equivalent explicit period controls.
+Breakpoints live together at the end of the stylesheet (480/768/1200px). CSS custom properties cannot be used directly in media conditions, so these are documented literal thresholds. The page has a maximum width of 1440px, with game selection and the result route constrained to 1024px for readability. Controls use 1, 2 or 4 columns. Ordinary interactive targets are at least 44px; the dense timetable has equivalent explicit period controls.
 
 ## Compatibility
 
-Planner/language storage keys are unchanged. Legacy `activeTab` is still accepted and serialized for compatibility; old theme preferences do not affect the light-only UI. No domains, backend identifiers or infrastructure were renamed. Calendar downloads use `asobi.ics` and send the edited sessions to the existing API. Session dates are never attributed to same-name editions ambiguously.
+Planner/language storage keys are unchanged. The existing `activeTab` values map to games, scheduling settings and the result; the selected panel is restored on reload. Old theme preferences do not affect the light-only UI. No domains, backend identifiers or infrastructure were renamed. Calendar downloads use `asobi.ics` and send the edited sessions to the existing API. Session dates are never attributed to same-name editions ambiguously.
 
 ## Verification
 

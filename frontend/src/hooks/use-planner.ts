@@ -16,6 +16,7 @@ import {
   resolveGames,
 } from "../services/api";
 import {
+  type PlannerTab,
   createPlannerListId,
   loadPlannerState,
   savePlannerState,
@@ -42,6 +43,9 @@ export function usePlanner() {
   const { language, setLanguage, t } = useLanguage();
   const [initialState] = useState(() =>
     loadPlannerState(getLocalCalendarDate(), t.app.defaultBacklog),
+  );
+  const [activeTab, setActiveTab] = useState<PlannerTab>(
+    initialState.activeTab,
   );
   const [backlogs, setBacklogs] = useState<GameList[]>(initialState.backlogs);
   const [activeBacklogId, setActiveBacklogId] = useState(
@@ -71,7 +75,7 @@ export function usePlanner() {
 
   useLayoutEffect(() => {
     savePlannerState({
-      activeTab: "games",
+      activeTab,
       backlogs,
       activeBacklogId,
       availability,
@@ -83,6 +87,7 @@ export function usePlanner() {
       startDate,
     });
   }, [
+    activeTab,
     backlogs,
     activeBacklogId,
     availability,
@@ -659,6 +664,8 @@ export function usePlanner() {
     clearGeneratedSchedule();
   };
   return {
+    activeTab,
+    setActiveTab,
     language,
     setLanguage,
     t,

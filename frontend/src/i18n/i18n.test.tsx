@@ -24,7 +24,7 @@ describe("i18n", () => {
     expect((chooser as HTMLSelectElement).value).toBe("pt-BR");
     expect(view.getByRole("heading", { name: "Seus jogos" })).toBeTruthy();
     expect(view.getByRole("heading", { name: "Minha lista" })).toBeTruthy();
-    expect(view.getByRole("link", { name: "Cronograma" })).toBeTruthy();
+    expect(view.getByRole("tab", { name: "Resultado" })).toBeTruthy();
 
     await user.selectOptions(chooser, "en");
 

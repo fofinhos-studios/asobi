@@ -1,5 +1,18 @@
 export const strings = {
   en: {
+    workflow: {
+      label: "Plan your games",
+      games: "Pick games",
+      availability: "Schedule",
+      schedule: "Result",
+      back: "Back",
+      next: "Set your schedule",
+      result: "View result",
+      settingsTitle: "Schedule your time",
+      resultTitle: "Your game plan",
+      resultHint:
+        "Your ordered games and sessions. Move a date to adjust your plan.",
+    },
     asobi: {
       periodConflict:
         "Choose a free period between 06:00 and 24:00, at least 30 minutes long.",
@@ -247,6 +260,19 @@ export const strings = {
     },
   },
   "pt-BR": {
+    workflow: {
+      label: "Planeje seus jogos",
+      games: "Escolher jogos",
+      availability: "Horários",
+      schedule: "Resultado",
+      back: "Voltar",
+      next: "Definir horários",
+      result: "Ver resultado",
+      settingsTitle: "Planeje seu tempo",
+      resultTitle: "Seu plano de jogos",
+      resultHint:
+        "Seus jogos e sessões em ordem. Altere uma data para ajustar o plano.",
+    },
     asobi: {
       periodConflict:
         "Escolha um período livre entre 06:00 e 24:00, com pelo menos 30 minutos.",

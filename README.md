@@ -25,7 +25,7 @@ Game information is provided by <img src="https://upload.wikimedia.org/wikipedia
 
 Asobi adapts Hon's flat dashboard and cards, with an orange and cool-gray identity. General Sans is used for text and Martian Mono for numbers and dates. Fonts are self-hosted; licenses are in `frontend/public/fonts`. The vector 遊 mark is derived from Noto Sans JP.
 
-All visual tokens and component rules live in `frontend/src/styles/design-system.css`. Edit that file to change the palette, type scale, spacing, borders, controls and responsive layout. Game colors are stable references based on IGDB ID, shared across the library, route and agenda. Breakpoints: 480, 768, 1024 and 1200px.
+All visual tokens and component rules live in `frontend/src/styles/design-system.css`. Edit that file to change the palette, type scale, spacing, borders, controls and responsive layout. Game colors are stable references based on IGDB ID, shared across the library, route and agenda. The planner uses three tabs: pick games, schedule your time, and view the result. Breakpoints: 480, 768 and 1200px.
 
 Run the frontend and open `/?design-system` for the development-only component gallery. It uses sample data and never writes to your saved planner. Existing planner and language storage keys remain compatible.
 

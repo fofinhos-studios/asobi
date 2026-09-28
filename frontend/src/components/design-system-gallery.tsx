@@ -1,11 +1,20 @@
 import { GameControllerIcon, PlusIcon } from "@phosphor-icons/react";
 import { useState } from "preact/hooks";
 import { useLanguage } from "../i18n/i18n";
-import type { ListGame, ScheduleResponse } from "../types";
+import type { PlannerTab } from "../services/planner-storage";
+import type {
+  ListGame,
+  PlanningMode,
+  ScheduleAlgorithm,
+  ScheduleResponse,
+  WeeklyAvailability,
+} from "../types";
 import { AsobiBrand } from "./asobi-brand";
 import { GameCartridge } from "./game-cartridge";
 import { GameListView } from "./game-list-view";
 import { GameRoute } from "./game-route";
+import { PlannerControls } from "./planner-controls";
+import { PlannerTabs } from "./planner-tabs";
 import { ScheduleView } from "./schedule-view";
 import { Button, Input } from "./ui";
 
@@ -52,6 +61,15 @@ const samples: ListGame[] = [
 export function DesignSystemGallery() {
   const { language, setLanguage, t } = useLanguage();
   const [games, setGames] = useState(samples);
+  const [activeTab, setActiveTab] = useState<PlannerTab>("games");
+  const [availability, setAvailability] = useState<WeeklyAvailability | null>({
+    days: [{ day_of_week: 0, hours: 2, start_hour: 20, start_minute: 0 }],
+  });
+  const [startDate, setStartDate] = useState("2026-10-12");
+  const [planningMode, setPlanningMode] = useState<PlanningMode>("weekly");
+  const [finishByDate, setFinishByDate] = useState<string | null>(null);
+  const [maxSessionHours, setMaxSessionHours] = useState(4);
+  const [algorithm, setAlgorithm] = useState<ScheduleAlgorithm>("sequential");
   const [schedule, setSchedule] = useState<ScheduleResponse>({
     total_hours: 6,
     estimated_end_date: "2026-10-14",
@@ -133,8 +151,10 @@ export function DesignSystemGallery() {
           </p>
           <p class="planner-inline-notice">{t.schedule.finishByRequired}</p>
         </section>
-        <div class="asobi-dashboard">
-          <section class="asobi-library">
+        <PlannerTabs
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          games=<section class="asobi-library">
             <div class="asobi-section-heading">
               <h2>
                 <GameControllerIcon />
@@ -164,24 +184,44 @@ export function DesignSystemGallery() {
               onRenameList={() => undefined}
             />
           </section>
-          <GameRoute
-            games={games}
-            schedule={schedule}
-            algorithm="sequential"
-            isGenerating={false}
-            error=""
-            onReorder={reorder}
-          />
-        </div>
-        <div class="asobi-agenda">
-          <ScheduleView
-            games={games}
-            schedule={schedule}
-            onScheduleChange={setSchedule}
-            onDownloadIcal={async () => true}
-            onCopyCalendarUrl={async () => true}
-          />
-        </div>
+          availability={
+            <PlannerControls
+              availability={availability}
+              startDate={startDate}
+              planningMode={planningMode}
+              finishByDate={finishByDate}
+              maxSessionHours={maxSessionHours}
+              algorithm={algorithm}
+              onAvailability={setAvailability}
+              onStartDate={setStartDate}
+              onPlanningMode={setPlanningMode}
+              onFinishByDate={setFinishByDate}
+              onMaxSessionHours={setMaxSessionHours}
+              onAlgorithm={setAlgorithm}
+            />
+          }
+          schedule={
+            <div class="asobi-result">
+              <GameRoute
+                games={games}
+                schedule={schedule}
+                algorithm={algorithm}
+                isGenerating={false}
+                error=""
+                onReorder={reorder}
+              />
+              <div class="asobi-agenda">
+                <ScheduleView
+                  games={games}
+                  schedule={schedule}
+                  onScheduleChange={setSchedule}
+                  onDownloadIcal={async () => true}
+                  onCopyCalendarUrl={async () => true}
+                />
+              </div>
+            </div>
+          }
+        />
         <details class="asobi-gallery__edge-cases">
           <summary>Missing artwork, long titles & unavailable duration</summary>
           <GameCartridge

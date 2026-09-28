@@ -1,6 +1,6 @@
 /* ASOBI / DESIGN SYSTEM — adapted from Hon's flat dashboard and book plates.
  * Single source: fonts → tokens → foundations → controls → layout → cards → schedule → gallery.
- * Breakpoints: 480 compact cards, 768 paired controls, 1024 dashboard, 1200 four controls.
+ * Breakpoints: 480 compact cards/tabs, 768 paired controls, 1200 four controls.
  * Components may supply --game-tone and data-driven drag/calendar positions only.
  */
 @font-face {
@@ -415,9 +415,6 @@ dd {
   padding-top: var(--space-6);
   border-top: var(--rule-soft);
 }
-.asobi-dashboard {
-  display: grid;
-}
 .asobi-library,
 .asobi-route {
   min-width: 0;
@@ -465,6 +462,8 @@ dd {
   padding: var(--space-2);
 }
 .planner-inline-stats {
+  display: flex;
+  gap: var(--space-2);
   font-size: var(--text-xs);
   flex: none;
 }
@@ -689,6 +688,81 @@ dd {
 .planner-result-variant--success {
   background: var(--sage);
 }
+/* Three-step planner. Panels stay mounted so search and editor drafts survive. */
+.asobi-header > .asobi-language {
+  margin-left: auto;
+}
+.asobi-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: var(--rule-strong);
+  margin-bottom: var(--space-8);
+}
+.asobi-tabs [role="tab"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: var(--target);
+  padding: var(--space-4);
+  border: 0;
+  border-right: var(--rule-soft);
+  background: var(--surface);
+  color: var(--foreground);
+  font-weight: var(--weight-medium);
+}
+.asobi-tabs [role="tab"][aria-selected="true"] {
+  background: var(--accent);
+}
+.asobi-tabs [role="tab"]:hover:not([aria-selected="true"]) {
+  background: var(--muted);
+}
+.asobi-tabs__number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--station-size);
+  height: var(--station-size);
+  border: var(--rule);
+  border-radius: var(--radius-circle);
+  background: var(--surface);
+  font: var(--text-xs) / 1 var(--font-mono);
+}
+.asobi-tab-panel--games {
+  max-width: 64rem;
+  margin-inline: auto;
+}
+.asobi-tab-panel--games .asobi-library {
+  padding: 0;
+}
+.asobi-step-heading {
+  font-size: var(--text-section);
+  margin-bottom: var(--space-4);
+}
+.asobi-step-hint {
+  color: var(--muted-foreground);
+  margin-bottom: var(--space-6);
+}
+.asobi-step-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: var(--rule);
+}
+.asobi-step-actions__next {
+  margin-left: auto;
+}
+.asobi-result > .asobi-route {
+  border: 0;
+  padding: 0;
+  max-width: 64rem;
+  margin-inline: auto;
+}
+.asobi-result > .asobi-agenda {
+  margin-top: var(--space-8);
+}
+
 /* Game spines: full-width artwork, circular order marker and compact metadata. */
 .planner-backlog-list {
   display: grid;
@@ -1385,19 +1459,6 @@ dd {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
-@media (min-width: 1024px) {
-  .asobi-dashboard {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  }
-  .asobi-library {
-    padding-right: var(--space-8);
-  }
-  .asobi-route {
-    border-top: 0;
-    border-left: var(--rule);
-    padding-left: var(--space-8);
-  }
-}
 @media (min-width: 1200px) {
   .asobi-controls {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1447,6 +1508,13 @@ dd {
   }
 }
 @media (max-width: 479px) {
+  .asobi-tabs [role="tab"] {
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-1);
+    font-size: var(--text-sm);
+  }
+
   .game-cartridge__content {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-1);

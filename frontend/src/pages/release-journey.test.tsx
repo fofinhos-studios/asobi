@@ -180,6 +180,7 @@ describe("release journey", () => {
         ).map((title) => title.textContent);
       expect(listTitles()).toEqual(["Chrono Trigger", "Final Fantasy VII"]);
 
+      await user.click(firstView.getByRole("tab", { name: "Schedule" }));
       if (firstView.queryByRole("button", { name: /edit hours/i }))
         await user.click(
           firstView.getByRole("button", { name: /edit hours/i }),
@@ -187,7 +188,7 @@ describe("release journey", () => {
       await user.click(
         firstView.getByRole("button", { name: "Monday at 20:00" }),
       );
-      await user.click(firstView.getByRole("link", { name: "Schedule" }));
+      await user.click(firstView.getByRole("tab", { name: "Result" }));
 
       await waitFor(() =>
         expect(

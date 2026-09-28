@@ -1,4 +1,4 @@
-type PlannerTab = "games" | "availability" | "schedule";
+export type PlannerTab = "games" | "availability" | "schedule";
 import type {
   DayAvailability,
   GameList,
