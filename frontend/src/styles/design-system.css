@@ -26,6 +26,12 @@
   color-scheme: light;
   --white: #ffffff;
   --ink: #151515;
+  --glass-card-start: #ffffffeb;
+  --glass-card-middle: #ffffffc2;
+  --glass-card-end: #ffffff7a;
+  --glass-logo: #ffffffbd;
+  --glass-controls: #ffffffb3;
+  --shadow-soft: #00000038;
   --concrete: #eceeef;
   --gray: #60656b;
   --orange: #ff743d;
@@ -595,8 +601,7 @@ dd {
   pointer-events: none;
   z-index: -1;
 }
-.planner-result__wash,
-.game-cartridge__wash {
+.planner-result__wash {
   display: none;
 }
 .planner-result__cover-frame {
@@ -766,9 +771,11 @@ dd {
 }
 .planner-backlog-row {
   position: relative;
+  isolation: isolate;
   border: var(--rule);
-  background: var(--surface);
+  background: var(--game-tone, var(--muted));
   min-width: 0;
+  overflow: hidden;
 }
 .asobi-game-number,
 .asobi-route__number {
@@ -786,7 +793,7 @@ dd {
   position: absolute;
   top: var(--space-3);
   left: var(--space-3);
-  z-index: 1;
+  z-index: 4;
 }
 .game-cartridge {
   position: relative;
@@ -799,12 +806,44 @@ dd {
   overflow: hidden;
 }
 .planner-backlog-row > .game-cartridge {
+  position: static;
+  isolation: auto;
+  background: transparent;
+  overflow: visible;
   padding-left: calc(var(--space-6) + var(--station-size));
 }
 .game-cartridge__hero {
+  z-index: 0;
+  opacity: 0;
+  transition: opacity var(--motion-normal) var(--ease);
+}
+.game-cartridge:not(.game-cartridge--loading) .game-cartridge__hero {
   opacity: var(--spine-art-opacity);
 }
+.planner-backlog-row
+  > .game-cartridge:not(.game-cartridge--loading)
+  .game-cartridge__hero {
+  opacity: 0.42;
+}
+.game-cartridge__wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    var(--glass-card-start) 0%,
+    var(--glass-card-middle) 46%,
+    var(--glass-card-end) 100%
+  );
+  pointer-events: none;
+}
+.planner-backlog-row > .game-cartridge .game-cartridge__wash {
+  bottom: auto;
+  height: var(--spine-height);
+}
 .game-cartridge__content {
+  position: relative;
+  z-index: 2;
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -815,8 +854,34 @@ dd {
   min-width: 0;
   grid-column: 1;
   grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.game-cartridge__logo {
+  flex: 0 1 auto;
+  min-width: 0;
+  width: auto;
+  max-width: clamp(6rem, 14vw, 12rem);
+  height: 2.75rem;
+  max-height: 2.75rem;
+  object-fit: contain;
+  object-position: left center;
+  padding: var(--space-1) var(--space-2);
+  border: var(--rule-soft);
+  background: var(--glass-logo);
+  filter: drop-shadow(0 1px 1px var(--shadow-soft));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.game-cartridge--calendar .game-cartridge__logo,
+.game-cartridge--spine .game-cartridge__logo {
+  max-width: 6rem;
+  height: 1.75rem;
+  padding: 0.125rem var(--space-1);
 }
 .game-cartridge__title {
+  min-width: 0;
   font-size: var(--text-lg);
   letter-spacing: var(--tracking-heading);
   overflow-wrap: anywhere;
@@ -871,6 +936,7 @@ dd {
   position: absolute;
   bottom: var(--space-2);
   right: var(--space-3);
+  z-index: 3;
   width: var(--space-6);
   height: var(--space-1);
   background: var(--foreground);
@@ -882,8 +948,13 @@ dd {
   }
 }
 .planner-backlog-row__controls {
+  position: relative;
+  z-index: 3;
   padding: var(--space-2);
   border-top: var(--rule);
+  background: var(--glass-controls);
+  backdrop-filter: blur(18px) saturate(0.82);
+  -webkit-backdrop-filter: blur(18px) saturate(0.82);
 }
 .planner-chip-group {
   display: flex;
@@ -912,6 +983,8 @@ dd {
   font-size: var(--text-sm);
 }
 .planner-backlog-row__actions {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -919,6 +992,9 @@ dd {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   border-top: var(--rule-soft);
+  background: var(--glass-controls);
+  backdrop-filter: blur(18px) saturate(0.82);
+  -webkit-backdrop-filter: blur(18px) saturate(0.82);
 }
 .planner-backlog-row__reorder,
 .planner-backlog-row__action-group {

@@ -46,6 +46,7 @@ const samples: ListGame[] = [
 ].map(({ app, hours, year, genre, ...game }) => ({
   ...game,
   cover_url: `https://cdn.cloudflare.steamstatic.com/steam/apps/${app}/library_600x900.jpg`,
+  logo_url: `https://cdn.cloudflare.steamstatic.com/steam/apps/${app}/logo.png`,
   hero_url: `https://cdn.cloudflare.steamstatic.com/steam/apps/${app}/library_hero.jpg`,
   summary: "",
   genres: [genre],

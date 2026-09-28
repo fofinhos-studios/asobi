@@ -28,9 +28,16 @@ export function GameCartridge({
   const heroFallbackUrl =
     game.cover_url?.replace("/t_thumb/", "/t_1080p/") ?? "";
   const [failedArtwork, setFailedArtwork] = useState<string[]>([]);
-  const heroUrl = [game.hero_url, heroFallbackUrl]
+  const heroUrl = [
+    game.hero_url,
+    game.hltb_status === "loading" ? "" : heroFallbackUrl,
+  ]
     .filter((url): url is string => Boolean(url))
     .find((url) => !failedArtwork.includes(url));
+  const logoUrl =
+    game.logo_url && !failedArtwork.includes(game.logo_url)
+      ? game.logo_url
+      : undefined;
   const artworkUrls = heroUrl ? [heroUrl] : [];
   const [settledArtwork, setSettledArtwork] = useState<string[]>([]);
   const isReady =
@@ -87,6 +94,17 @@ export function GameCartridge({
 
       <div class="game-cartridge__content">
         <div class="game-cartridge__identity">
+          {logoUrl && (
+            <img
+              aria-hidden="true"
+              class="game-cartridge__logo"
+              src={logoUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={() => markArtworkFailed(logoUrl)}
+            />
+          )}
           <h3 class="game-cartridge__title planner-backlog-row__title">
             {game.name}
           </h3>
