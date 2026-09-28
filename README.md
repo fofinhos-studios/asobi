@@ -1,6 +1,6 @@
 <h1 align="center">
   <img src="frontend/public/asobi-mark.svg" width="32" height="32" alt="" align="absmiddle" />
-  <a href="https://gamingclock.fofinhos.studio/">Asobi</a>
+  <a href="https://asobi.fofinhos.studio/">Asobi</a>
 </h1>
 
 <p align="center">Turn your game backlog into a plan you can actually play <img src="https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/clock.svg" width="16" height="16" alt="" align="absmiddle" /></p>
