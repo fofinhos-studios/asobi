@@ -7,12 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "preact/hooks";
 import { useLanguage } from "../i18n/i18n";
-import {
-  type ListGame,
-  type ScheduleAlgorithm,
-  type ScheduleResponse,
-  getSelectedGameHours,
-} from "../types";
+import type { ListGame, ScheduleAlgorithm, ScheduleResponse } from "../types";
 import { GameCartridge } from "./game-cartridge";
 import { gameSessions, gameVisualStyle } from "./game-visuals";
 import { Button } from "./ui";
@@ -108,11 +103,6 @@ export function GameRoute({
           const plannedHours = sessions.length
             ? sessions.reduce((sum, session) => sum + session.duration_hours, 0)
             : undefined;
-          const hours =
-            plannedHours ??
-            (game.hltb_status === "resolved"
-              ? getSelectedGameHours(game)
-              : undefined);
           const dates = sessions.map((session) => session.date).sort();
           const ambiguous =
             games.filter(
@@ -140,33 +130,11 @@ export function GameRoute({
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div class="asobi-route__card">
-                {expanded ? (
-                  <GameCartridge game={game} plannedHours={plannedHours} />
-                ) : (
-                  <div class="asobi-route__identity">
-                    <div class="asobi-route__cover">
-                      {game.cover_url && (
-                        <img
-                          src={game.cover_url.replace(
-                            "/t_thumb/",
-                            "/t_cover_small/",
-                          )}
-                          alt=""
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.hidden = true;
-                          }}
-                        />
-                      )}
-                    </div>
-                    <div>
-                      <h3>{game.name}</h3>
-                      <span class="asobi-mono">
-                        {hours === undefined ? "—" : t.schedule.hours(hours)}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                <GameCartridge
+                  game={game}
+                  plannedHours={plannedHours}
+                  variant={expanded ? "backlog" : "spine"}
+                />
                 <div class="asobi-route__dates">
                   {dates.length ? (
                     <>

@@ -88,6 +88,11 @@
   --icon: 1.25rem;
   --icon-large: 1.5rem;
   --art-opacity: 0.08;
+  --spine-art-opacity: 0.24;
+  --spine-height: 5.5rem;
+  --spine-compact-height: 4rem;
+  --station-size: 2rem;
+  --radius-circle: 50%;
   --motion-fast: 120ms;
   --motion-normal: 180ms;
   --ease: ease-out;
@@ -684,32 +689,10 @@ dd {
 .planner-result-variant--success {
   background: var(--sage);
 }
-.platform-icons {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-.platform-icons__item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-xs);
-}
-.platform-icons__icon {
-  width: var(--icon);
-  height: var(--icon);
-  object-fit: contain;
-}
-.platform-icons__overflow,
-.platform-icons__fallback {
-  font-size: var(--text-xs);
-}
-
-/* Game plates: artwork, sequence number, readable title, measured time. */
+/* Game spines: full-width artwork, circular order marker and compact metadata. */
 .planner-backlog-list {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-3);
 }
 .planner-backlog-row {
   position: relative;
@@ -717,84 +700,102 @@ dd {
   background: var(--surface);
   min-width: 0;
 }
+.asobi-game-number,
+.asobi-route__number {
+  display: grid;
+  place-items: center;
+  width: var(--station-size);
+  height: var(--station-size);
+  border: var(--rule);
+  border-radius: var(--radius-circle);
+  background: var(--surface);
+  color: var(--foreground);
+  font: var(--weight-medium) var(--text-xs) / 1 var(--font-mono);
+}
 .asobi-game-number {
   position: absolute;
   top: var(--space-3);
-  right: var(--space-4);
+  left: var(--space-3);
   z-index: 1;
-  font: var(--weight-body) var(--text-lg) / 1 var(--font-mono);
 }
 .game-cartridge {
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: var(--cover-width) minmax(0, 1fr);
-  gap: var(--space-5);
-  padding: var(--space-6);
-  padding-top: var(--space-8);
+  align-items: center;
+  min-height: var(--spine-height);
+  padding: var(--space-3) var(--space-4);
   background: var(--game-tone, var(--muted));
   overflow: hidden;
 }
-.game-cartridge__cover-frame {
-  align-self: start;
+.planner-backlog-row > .game-cartridge {
+  padding-left: calc(var(--space-6) + var(--station-size));
 }
-.game-cartridge__cover {
-  display: block;
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  border: var(--rule);
-}
-.game-cartridge__cover--empty {
-  display: grid;
-  place-items: center;
-  background: var(--surface);
-  font: var(--text-xs) / var(--leading) var(--font-mono);
-  padding: var(--space-2);
-  text-align: center;
+.game-cartridge__hero {
+  opacity: var(--spine-art-opacity);
 }
 .game-cartridge__content {
   min-width: 0;
-}
-.game-cartridge__title {
-  font-size: var(--text-card);
-  letter-spacing: var(--tracking-heading);
-  margin-bottom: var(--space-3);
-  overflow-wrap: anywhere;
-}
-.game-cartridge__logo {
-  display: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
 }
 .game-cartridge__identity {
-  padding-right: var(--space-4);
+  min-width: 0;
+  grid-column: 1;
+  grid-row: 1;
+}
+.game-cartridge__title {
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-heading);
+  overflow-wrap: anywhere;
 }
 .game-cartridge__label {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3) var(--space-5);
-  margin-top: var(--space-4);
+  display: contents;
+}
+.game-cartridge__label > div {
+  display: none;
 }
 .game-cartridge__label > div:first-child {
-  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  grid-column: 2;
+  grid-row: 1;
+  white-space: nowrap;
 }
 .game-cartridge__label dt {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font: var(--text-xs) / var(--leading) var(--font-mono);
-  text-transform: uppercase;
+}
+.game-cartridge__label dt span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 .game-cartridge__label dt svg {
   width: var(--icon-small);
   height: var(--icon-small);
 }
 .game-cartridge__label dd {
-  font-size: var(--text-sm);
-  margin-top: var(--space-1);
+  font: var(--weight-medium) var(--text-sm) / var(--leading) var(--font-mono);
 }
-.game-cartridge__label > div:first-child dd {
-  font: var(--weight-medium) var(--text-number) / 1.2 var(--font-mono);
-  letter-spacing: var(--tracking-heading);
+.game-cartridge--backlog .game-cartridge__label > div:nth-child(2) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  grid-row: 2;
+  grid-column: 1;
+}
+.game-cartridge--backlog .game-cartridge__label > div:nth-child(2) dd {
+  font-size: var(--text-xs);
+}
+.game-cartridge--spine {
+  min-height: var(--spine-compact-height);
 }
 .game-cartridge__loading {
   position: absolute;
@@ -811,7 +812,7 @@ dd {
   }
 }
 .planner-backlog-row__controls {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2);
   border-top: var(--rule);
 }
 .planner-chip-group {
@@ -920,52 +921,23 @@ dd {
 }
 .asobi-route__number {
   position: relative;
-  display: grid;
-  place-items: center;
   align-self: start;
-  width: var(--space-8);
-  height: var(--space-8);
-  background: var(--surface);
-  border: var(--rule);
-  font: var(--text-xs) / 1 var(--font-mono);
   margin-top: var(--space-4);
 }
 .asobi-route__card {
   border: var(--rule);
   background: var(--game-tone);
   min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
 }
-.asobi-route__identity {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4);
-}
-.asobi-route__identity > div:last-child {
-  min-width: 0;
-}
-.asobi-route__identity h3 {
-  margin-bottom: var(--space-2);
-  font-size: var(--text-lg);
-}
-.asobi-route__identity .asobi-mono {
-  font-size: var(--text-xs);
-}
-.asobi-route__cover {
-  width: var(--cover-compact);
-  aspect-ratio: 3 / 4;
-  background: var(--surface);
-  flex: none;
-  border: var(--rule);
-}
-.asobi-route__cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.asobi-route__card > .game-cartridge {
+  grid-column: 1 / -1;
 }
 .asobi-route__dates {
   font-size: var(--text-xs);
-  padding: 0 var(--space-4) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  align-self: center;
   overflow-wrap: anywhere;
 }
 .asobi-route__actions {
@@ -973,7 +945,6 @@ dd {
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
-  border-top: var(--rule);
 }
 .asobi-route__actions > svg {
   margin-right: auto;
@@ -988,17 +959,6 @@ dd {
 }
 .asobi-route__actions .ui-button:disabled {
   opacity: 0.5;
-}
-.asobi-route__card .game-cartridge {
-  --cover-width: 4rem;
-  padding: var(--space-4);
-  gap: var(--space-3);
-}
-.asobi-route__card .game-cartridge__title {
-  font-size: var(--text-lg);
-}
-.asobi-route__card .game-cartridge__label > div:not(:first-child) {
-  display: none;
 }
 .asobi-route__stop--dragging {
   opacity: 0.5;
@@ -1260,32 +1220,22 @@ dd {
   font-size: var(--text-xs);
 }
 .game-cartridge--calendar {
-  display: block;
+  min-height: var(--spine-compact-height);
   padding: var(--space-2);
 }
-.game-cartridge--calendar .game-cartridge__cover-frame,
-.game-cartridge--calendar .game-cartridge__platforms,
-.game-cartridge--calendar .game-cartridge__label > div:nth-child(n + 3) {
-  display: none;
+.game-cartridge--calendar .game-cartridge__content {
+  display: block;
 }
 .game-cartridge--calendar .game-cartridge__title {
   font-size: var(--text-sm);
   letter-spacing: 0;
+  margin-bottom: var(--space-2);
 }
-.game-cartridge--calendar .game-cartridge__label {
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-}
-.game-cartridge--calendar .game-cartridge__label > div:first-child {
-  width: auto;
-}
-.game-cartridge--calendar .game-cartridge__label > div:first-child dd {
-  font-size: var(--text-xs);
+.game-cartridge--calendar .game-cartridge__label > div:nth-child(2) {
+  display: flex;
+  gap: var(--space-1);
 }
 .game-cartridge--calendar .game-cartridge__label dd {
-  font-size: var(--text-xs);
-}
-.game-cartridge--calendar .game-cartridge__label dt {
   font-size: var(--text-xs);
 }
 
@@ -1497,32 +1447,34 @@ dd {
   }
 }
 @media (max-width: 479px) {
-  .game-cartridge {
-    --cover-width: 4.5rem;
-    padding: var(--space-5) var(--space-3);
-    gap: var(--space-3);
+  .game-cartridge__content {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
   }
   .game-cartridge__title {
-    font-size: var(--text-lg);
+    font-size: var(--text-base);
   }
-  .asobi-game-number {
-    top: var(--space-2);
-    right: var(--space-2);
-    font-size: var(--text-xs);
+  .game-cartridge__label > div:first-child {
+    grid-column: 1;
+    grid-row: 2;
   }
-  .game-cartridge__label > div:first-child dd {
-    font-size: var(--text-section);
-  }
-  .game-cartridge__label > div:nth-child(n + 4) {
+  .game-cartridge--backlog .game-cartridge__label > div:nth-child(2) {
     display: none;
+  }
+  .asobi-route__actions > svg {
+    display: none;
+  }
+  .asobi-route__actions {
+    padding-inline: 0;
   }
   .planner-backlog-row__controls,
   .planner-backlog-row__actions {
     padding: var(--space-2);
   }
   .planner-hltb-option {
-    flex-basis: 100%;
-    justify-content: flex-start;
+    flex-basis: 0;
+    gap: var(--space-1);
+    padding-inline: var(--space-1);
   }
   .backlog-manager__create {
     flex-direction: column;
@@ -1536,9 +1488,6 @@ dd {
   }
   .asobi-section-heading {
     flex-wrap: wrap;
-  }
-  .asobi-route__identity {
-    padding: var(--space-3);
   }
   .asobi-route__dates {
     padding-inline: var(--space-3);

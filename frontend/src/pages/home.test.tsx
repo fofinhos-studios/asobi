@@ -228,11 +228,15 @@ describe("HomePage", () => {
       await user.click(view.getByRole("link", { name: "Your games" }));
       await waitFor(() =>
         expect(
-          within(view.getByRole("main")).getByText(/^27\.5h$/i),
+          within(view.getByRole("region", { name: "Your games" })).getByText(
+            /^27\.5h$/i,
+          ),
         ).toBeTruthy(),
       );
       expect(
-        within(view.getByRole("main")).getByText(/^27\.5h$/i),
+        within(view.getByRole("region", { name: "Your games" })).getByText(
+          /^27\.5h$/i,
+        ),
       ).toBeTruthy();
     } finally {
       globalThis.fetch = originalFetch;
@@ -303,7 +307,9 @@ describe("HomePage", () => {
 
       await waitFor(() =>
         expect(
-          activePanel.querySelectorAll(".planner-backlog-row__title"),
+          activePanel.querySelectorAll(
+            ".planner-backlog-row .planner-backlog-row__title",
+          ),
         ).toHaveLength(2),
       );
       expect(
@@ -317,7 +323,9 @@ describe("HomePage", () => {
       );
 
       expect(
-        activePanel.querySelectorAll(".planner-backlog-row__title"),
+        activePanel.querySelectorAll(
+          ".planner-backlog-row .planner-backlog-row__title",
+        ),
       ).toHaveLength(1);
       expect(
         activePanel.querySelector(".planner-backlog-row__title")?.textContent,
@@ -873,9 +881,10 @@ describe("HomePage", () => {
       );
 
       const originalCoverUrl = view.container
-        .querySelector(".planner-backlog-row .game-cartridge__cover")
+        .querySelector(".planner-backlog-row .game-cartridge__hero")
         ?.getAttribute("src");
 
+      expect(originalCoverUrl).toBeTruthy();
       await user.click(
         within(gamesPanel).getByRole("button", {
           name: /retry hollow knight playtime/i,
@@ -887,7 +896,7 @@ describe("HomePage", () => {
       );
       expect(
         view.container
-          .querySelector(".planner-backlog-row .game-cartridge__cover")
+          .querySelector(".planner-backlog-row .game-cartridge__hero")
           ?.getAttribute("src"),
       ).toBe(originalCoverUrl);
       expect(resolveAttempt).toBe(2);

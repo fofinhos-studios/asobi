@@ -109,8 +109,8 @@ describe("ScheduleView", () => {
       view.getByRole("button", { name: "Calendar", exact: true }),
     );
     expect(view.container.querySelector(".schedule-calendar")).toBeTruthy();
-    expect(view.getByAltText("Disco Elysium logo")).toBeTruthy();
-    expect(view.getByAltText("Outer Wilds cover")).toBeTruthy();
+    expect(view.getByRole("heading", { name: "Disco Elysium" })).toBeTruthy();
+    expect(view.getByRole("heading", { name: "Outer Wilds" })).toBeTruthy();
     expect(view.getByText("2.5h")).toBeTruthy();
   });
 

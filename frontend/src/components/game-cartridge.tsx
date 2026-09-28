@@ -8,17 +8,12 @@ import { useState } from "preact/hooks";
 import { useLanguage } from "../i18n/i18n";
 import { type ListGame, getSelectedGameHours } from "../types";
 import { gameVisualStyle } from "./game-visuals";
-import { PlatformIcons } from "./platform-icons";
 
 interface Props {
   game: ListGame;
   plannedHours?: number;
   startTime?: string;
-  variant?: "backlog" | "calendar";
-}
-
-function previewCoverUrl(coverUrl: string): string {
-  return coverUrl.replace("/t_thumb/", "/t_cover_small/");
+  variant?: "backlog" | "calendar" | "spine";
 }
 
 export function GameCartridge({
@@ -30,22 +25,13 @@ export function GameCartridge({
   const { language, t } = useLanguage();
   const primaryHours = plannedHours ?? getSelectedGameHours(game);
   const primaryLabel = t.asobi.playtime;
-  const coverUrl = game.cover_url ? previewCoverUrl(game.cover_url) : "";
   const heroFallbackUrl =
     game.cover_url?.replace("/t_thumb/", "/t_1080p/") ?? "";
   const [failedArtwork, setFailedArtwork] = useState<string[]>([]);
   const heroUrl = [game.hero_url, heroFallbackUrl]
     .filter((url): url is string => Boolean(url))
     .find((url) => !failedArtwork.includes(url));
-  const logoUrl =
-    game.logo_url && !failedArtwork.includes(game.logo_url)
-      ? game.logo_url
-      : "";
-  const artworkUrls = [
-    ...new Set(
-      [heroUrl, coverUrl].filter((url): url is string => Boolean(url)),
-    ),
-  ];
+  const artworkUrls = heroUrl ? [heroUrl] : [];
   const [settledArtwork, setSettledArtwork] = useState<string[]>([]);
   const isReady =
     game.hltb_status !== "loading" &&
@@ -99,46 +85,11 @@ export function GameCartridge({
       )}
       <div class="game-cartridge__wash" aria-hidden="true" />
 
-      <div class="game-cartridge__cover-frame">
-        {coverUrl && !failedArtwork.includes(coverUrl) ? (
-          <img
-            class="game-cartridge__cover"
-            src={coverUrl}
-            alt={t.asobi.cover(game.name)}
-            loading="lazy"
-            decoding="async"
-            onLoad={() => markArtworkSettled(coverUrl)}
-            onError={() => markArtworkFailed(coverUrl)}
-          />
-        ) : (
-          <div class="game-cartridge__cover game-cartridge__cover--empty">
-            {t.asobi.noArt}
-          </div>
-        )}
-      </div>
-
       <div class="game-cartridge__content">
         <div class="game-cartridge__identity">
-          {logoUrl ? (
-            <img
-              class="game-cartridge__logo"
-              src={logoUrl}
-              alt={`${game.name} logo`}
-              loading="lazy"
-              decoding="async"
-              onLoad={() => markArtworkSettled(logoUrl)}
-              onError={() => markArtworkFailed(logoUrl)}
-            />
-          ) : null}
           <h3 class="game-cartridge__title planner-backlog-row__title">
             {game.name}
           </h3>
-          <PlatformIcons
-            class="game-cartridge__platforms"
-            platforms={game.platforms}
-            maxIcons={2}
-            showFallback
-          />
         </div>
 
         <dl class="game-cartridge__label" aria-label={`${game.name} details`}>

@@ -115,11 +115,8 @@ describe("GameSearch", () => {
         view.container.querySelector(".planner-result__artwork-loading"),
       ).toBeNull(),
     );
-    expect(
-      view.container
-        .querySelector(".platform-icons__icon")
-        ?.getAttribute("src"),
-    ).toContain("/platform-icons/Windows.png");
+    expect(view.container.querySelector(".platform-icons")).toBeNull();
+    expect(view.queryByText("PC")).toBeNull();
   });
 
   test("uses the alternate cover when a search result image fails", async () => {
@@ -240,7 +237,8 @@ describe("GameSearch", () => {
     const versionButton = await view.findByRole("button", {
       name: "Add Chrono Trigger (Expanded version) to backlog",
     });
-    expect(view.getByText("Nintendo DS · 2008")).toBeTruthy();
+    expect(view.getByText("2008")).toBeTruthy();
+    expect(view.queryByText(/Nintendo DS/)).toBeNull();
 
     await user.click(versionButton);
 
