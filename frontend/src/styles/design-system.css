@@ -760,7 +760,10 @@ dd {
   padding: 0;
 }
 .asobi-result > .asobi-agenda {
-  margin-top: var(--space-8);
+  margin-bottom: var(--space-8);
+}
+.asobi-result__notice {
+  margin-top: var(--space-4);
 }
 
 /* Game spines: full-width artwork, circular order marker and compact metadata. */
@@ -1524,6 +1527,34 @@ dd {
   .asobi-control + .asobi-control {
     border-left: var(--rule);
     padding-left: var(--space-6);
+  }
+}
+@media (min-width: 1280px) {
+  .asobi-result--with-schedule {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+    gap: var(--space-8);
+  }
+  .asobi-result--with-schedule > .asobi-agenda {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border-top: 0;
+  }
+  .asobi-result--with-schedule > .asobi-route {
+    border-left: var(--rule);
+    padding-left: var(--space-8);
+  }
+  .asobi-result--with-schedule > .asobi-result__notice {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+  .asobi-result--with-schedule .planner-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .asobi-result--with-schedule .schedule-calendar__month {
+    min-width: 42rem;
   }
 }
 @media (max-width: 767px) {

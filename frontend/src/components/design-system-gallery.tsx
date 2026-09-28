@@ -202,15 +202,7 @@ export function DesignSystemGallery() {
             />
           }
           schedule={
-            <div class="asobi-result">
-              <GameRoute
-                games={games}
-                schedule={schedule}
-                algorithm={algorithm}
-                isGenerating={false}
-                error=""
-                onReorder={reorder}
-              />
+            <div class="asobi-result asobi-result--with-schedule">
               <div class="asobi-agenda">
                 <ScheduleView
                   games={games}
@@ -220,6 +212,14 @@ export function DesignSystemGallery() {
                   onCopyCalendarUrl={async () => true}
                 />
               </div>
+              <GameRoute
+                games={games}
+                schedule={schedule}
+                algorithm={algorithm}
+                isGenerating={false}
+                error=""
+                onReorder={reorder}
+              />
             </div>
           }
         />

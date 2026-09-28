@@ -92,23 +92,9 @@ export function HomePage() {
           schedule={
             <>
               <h1 class="asobi-step-heading">{t.workflow.resultTitle}</h1>
-              <div class="asobi-result">
-                <GameRoute
-                  games={p.games}
-                  schedule={p.schedule}
-                  algorithm={p.algorithm}
-                  isGenerating={p.isGenerating}
-                  error={p.actionError}
-                  onReorder={p.reorderGames}
-                />
-                {p.excludedGames.length > 0 && (
-                  <p class="planner-inline-notice">
-                    {t.schedule.excludedGames(
-                      p.excludedGames.map((game) => game.name).join(", "),
-                      p.excludedGames.length,
-                    )}
-                  </p>
-                )}
+              <div
+                class={`asobi-result${p.schedule ? " asobi-result--with-schedule" : ""}`}
+              >
                 {p.schedule && (
                   <div class="asobi-agenda" id="agenda">
                     <ScheduleView
@@ -120,6 +106,22 @@ export function HomePage() {
                       onCopyCalendarUrl={p.handleCopyCalendarUrl}
                     />
                   </div>
+                )}
+                <GameRoute
+                  games={p.games}
+                  schedule={p.schedule}
+                  algorithm={p.algorithm}
+                  isGenerating={p.isGenerating}
+                  error={p.actionError}
+                  onReorder={p.reorderGames}
+                />
+                {p.excludedGames.length > 0 && (
+                  <p class="planner-inline-notice asobi-result__notice">
+                    {t.schedule.excludedGames(
+                      p.excludedGames.map((game) => game.name).join(", "),
+                      p.excludedGames.length,
+                    )}
+                  </p>
                 )}
               </div>
             </>
