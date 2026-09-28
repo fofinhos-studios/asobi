@@ -492,6 +492,11 @@ dd {
 .asobi-footer a {
   color: var(--foreground);
 }
+.asobi-footer__github {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
 
 /* Backlogs, search and collection controls */
 .backlog-manager {

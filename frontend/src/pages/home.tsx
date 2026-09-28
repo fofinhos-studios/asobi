@@ -1,4 +1,4 @@
-import { GameControllerIcon } from "@phosphor-icons/react";
+import { GameControllerIcon, GithubLogoIcon } from "@phosphor-icons/react";
 import { AsobiBrand } from "../components/asobi-brand";
 import { BacklogManager } from "../components/backlog-manager";
 import { GameRoute } from "../components/game-route";
@@ -132,6 +132,15 @@ export function HomePage() {
         <span>
           Made with love by 🧡💜{" "}
           <a href="https://fofinhos.studio/">fofinhos.studio</a>
+          {" · "}
+          <a
+            class="asobi-footer__github"
+            href="https://github.com/fofinhos-studios/asobi"
+            aria-label="Asobi on GitHub"
+            title="Asobi on GitHub"
+          >
+            <GithubLogoIcon size={16} aria-hidden="true" />
+          </a>
         </span>
         <span>
           {t.asobi.source.data}: <a href="https://www.igdb.com/">IGDB</a>
