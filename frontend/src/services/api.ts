@@ -318,6 +318,27 @@ export async function getGameArtwork(
   );
 }
 
+function schedulingGame(game: ListGame) {
+  return {
+    igdb_id: game.igdb_id,
+    name: game.name,
+    cover_url: game.cover_url,
+    logo_url: game.logo_url,
+    hero_url: game.hero_url,
+    summary: game.summary,
+    genres: game.genres,
+    platforms: game.platforms,
+    release_year: game.release_year,
+    rating: game.rating,
+    hltb_status: game.hltb_status,
+    hltb_match_name: game.hltb_match_name,
+    main_story_hours: game.main_story_hours,
+    main_extra_hours: game.main_extra_hours,
+    completionist_hours: game.completionist_hours,
+    selected_hltb_category: game.selected_hltb_category,
+  };
+}
+
 export async function generateSchedule(
   gameListName: string,
   games: ListGame[],
@@ -335,7 +356,7 @@ export async function generateSchedule(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         game_list_name: gameListName,
-        games,
+        games: games.map(schedulingGame),
         availability,
         algorithm,
         start_date: startDate,
@@ -371,7 +392,7 @@ export async function downloadIcal(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         game_list_name: gameListName,
-        games,
+        games: games.map(schedulingGame),
         availability,
         algorithm,
         start_date: startDate,

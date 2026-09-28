@@ -1,6 +1,7 @@
 import base64
 import binascii
 import zlib
+from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response
@@ -52,6 +53,15 @@ def _decode_calendar_url_payload(payload: str, encoding: str) -> bytes:
     if len(decompressed) > MAX_CALENDAR_URL_DECOMPRESSED_BYTES or not decompressor.eof:
         raise CalendarUrlPayloadTooLargeError
     return decompressed
+
+
+def _ical_attachment_header(game_list_name: str) -> str:
+    """Produce an RFC 5987 filename parameter safe for arbitrary list names."""
+    filename = f"{game_list_name}.ics"
+    encoded_filename = quote(filename, safe="")
+    if encoded_filename == filename:
+        return f'attachment; filename="{filename}"'
+    return f"attachment; filename*=utf-8''{encoded_filename}"
 
 
 def _build_schedule_games(request: ScheduleRequest) -> list[Game]:
@@ -112,7 +122,7 @@ async def download_ical(request: IcalRequest) -> Response:
     return Response(
         content=ical_content,
         media_type="text/calendar",
-        headers={"Content-Disposition": f'attachment; filename="{request.game_list_name}.ics"'},
+        headers={"Content-Disposition": _ical_attachment_header(request.game_list_name)},
     )
 
 
