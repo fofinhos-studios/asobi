@@ -132,7 +132,15 @@ export function HomePage() {
           Made with love by 🧡💜{" "}
           <a href="https://fofinhos.studio/">fofinhos.studio</a>
         </span>
-        <span>{t.asobi.source}</span>
+        <span>
+          {t.asobi.source.data}: <a href="https://www.igdb.com/">IGDB</a>
+          {" · "}
+          {t.asobi.source.playtime}:{" "}
+          <a href="https://howlongtobeat.com/">HowLongToBeat</a>
+          {" · "}
+          {t.asobi.source.artwork}:{" "}
+          <a href="https://www.steamgriddb.com/">SteamGridDB</a>
+        </span>
       </footer>
     </div>
   );

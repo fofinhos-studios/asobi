@@ -53,8 +53,7 @@ export const strings = {
       dateRange: "First / last session",
       hours: "hours",
       sessions: (count: number) => `${count} session${count === 1 ? "" : "s"}`,
-      source:
-        "Game data: IGDB · Playtime: HowLongToBeat · Artwork: SteamGridDB",
+      source: { data: "Game data", playtime: "Playtime", artwork: "Artwork" },
       day: "Day",
       time: "Start time",
       duration: "Hours",
@@ -313,7 +312,7 @@ export const strings = {
       dateRange: "Primeira / última sessão",
       hours: "horas",
       sessions: (count: number) => `${count} sess${count === 1 ? "ão" : "ões"}`,
-      source: "Dados: IGDB · Duração: HowLongToBeat · Imagens: SteamGridDB",
+      source: { data: "Dados", playtime: "Duração", artwork: "Imagens" },
       day: "Dia",
       time: "Horário inicial",
       duration: "Horas",
