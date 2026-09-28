@@ -368,6 +368,18 @@ dd {
   width: var(--brand-mark-size);
   height: var(--brand-mark-size);
 }
+.asobi-brand img,
+.asobi-brand__name {
+  transition: transform var(--motion-normal) var(--ease);
+}
+.asobi-brand:hover img,
+.asobi-brand:focus-visible img {
+  transform: rotate(-8deg);
+}
+.asobi-brand:hover .asobi-brand__name,
+.asobi-brand:focus-visible .asobi-brand__name {
+  transform: translateY(-2px);
+}
 .asobi-brand__name {
   font-size: var(--brand-wordmark-size);
   font-weight: var(--brand-weight);
