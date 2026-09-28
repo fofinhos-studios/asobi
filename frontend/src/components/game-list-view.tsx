@@ -12,7 +12,12 @@ import {
 import { useEffect, useRef, useState } from "preact/hooks";
 import { GAME_GROUPS_ENABLED } from "../config/features";
 import { useLanguage } from "../i18n/i18n";
-import type { GameGroupImport, HLTBCategory, ListGame } from "../types";
+import {
+  type GameGroupImport,
+  type HLTBCategory,
+  type ListGame,
+  getSelectedGameHours,
+} from "../types";
 import { GameCartridge } from "./game-cartridge";
 import { gameVisualStyle } from "./game-visuals";
 import { Button } from "./ui";
@@ -161,12 +166,13 @@ export function GameListView({
         </div>
         <div class="planner-inline-stats">
           <span>{t.list.count(games.length)}</span>
-          {games.length === 0 && (
-            <>
-              <span aria-hidden="true">·</span>
-              <span>0.0 h</span>
-            </>
-          )}
+          <span aria-hidden="true">·</span>
+          <span>
+            {games
+              .reduce((total, game) => total + getSelectedGameHours(game), 0)
+              .toFixed(1)}
+            {"\u00a0h"}
+          </span>
         </div>
       </div>
 

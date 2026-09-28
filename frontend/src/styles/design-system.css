@@ -500,11 +500,6 @@ dd {
 .backlog-manager__current-name {
   overflow-wrap: anywhere;
 }
-.backlog-manager__meta {
-  margin-left: auto;
-  font-size: var(--text-sm);
-  color: var(--foreground);
-}
 .backlog-manager__panel {
   border: var(--rule);
   border-top: 0;
@@ -1539,9 +1534,6 @@ dd {
   }
   .backlog-manager__current {
     flex-wrap: wrap;
-  }
-  .backlog-manager__meta {
-    margin-left: 0;
   }
   .asobi-section-heading {
     flex-wrap: wrap;
