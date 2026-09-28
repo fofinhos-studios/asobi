@@ -113,7 +113,7 @@ describe("release journey", () => {
     }) as typeof fetch;
 
     try {
-      const firstView = render(<HomePage path="/" />);
+      const firstView = render(<HomePage />);
 
       await user.click(
         firstView.getByRole("button", { name: /manage backlogs/i }),
@@ -132,7 +132,8 @@ describe("release journey", () => {
       await user.clear(listName);
       await user.type(listName, "Weekend rotation");
 
-      const gamesPanel = () => firstView.getByRole("tabpanel");
+      const gamesPanel = () =>
+        firstView.getByRole("region", { name: "Your games" });
       const searchInput = within(gamesPanel()).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -179,13 +180,14 @@ describe("release journey", () => {
         ).map((title) => title.textContent);
       expect(listTitles()).toEqual(["Chrono Trigger", "Final Fantasy VII"]);
 
-      await user.click(
-        firstView.getByRole("tab", { name: /set your routine/i }),
-      );
+      if (firstView.queryByRole("button", { name: /edit hours/i }))
+        await user.click(
+          firstView.getByRole("button", { name: /edit hours/i }),
+        );
       await user.click(
         firstView.getByRole("button", { name: "Monday at 20:00" }),
       );
-      await user.click(firstView.getByRole("tab", { name: /plan sessions/i }));
+      await user.click(firstView.getByRole("link", { name: "Schedule" }));
 
       await waitFor(() =>
         expect(
@@ -227,7 +229,7 @@ describe("release journey", () => {
       );
 
       firstView.unmount();
-      const reloadedView = render(<HomePage path="/" />);
+      const reloadedView = render(<HomePage />);
       expect(
         reloadedView.getByRole("heading", {
           name: "Weekend rotation",

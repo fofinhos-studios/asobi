@@ -1,4 +1,4 @@
-import { render } from "@testing-library/preact";
+import { fireEvent, render } from "@testing-library/preact";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
 
@@ -67,13 +67,19 @@ describe("ScheduleView", () => {
       <ScheduleView
         schedule={schedule}
         onScheduleChange={() => {}}
-        onDownloadIcal={() => {}}
+        onDownloadIcal={async () => true}
         onCopyCalendarUrl={() => Promise.resolve(true)}
       />,
     );
 
+    fireEvent.click(
+      view.getByRole("button", { name: "Calendar", exact: true }),
+    );
     expect(view.getAllByText(/play sessions/i).length).toBeGreaterThan(0);
     expect(view.queryByRole("table")).toBeNull();
+    fireEvent.click(
+      view.getByRole("button", { name: "Calendar", exact: true }),
+    );
     expect(view.container.querySelector(".schedule-calendar")).toBeTruthy();
     expect(view.getByRole("heading", { name: "March 2026" })).toBeTruthy();
     expect(view.getByRole("heading", { name: "April 2026" })).toBeTruthy();
@@ -94,15 +100,18 @@ describe("ScheduleView", () => {
         schedule={schedule}
         games={games}
         onScheduleChange={() => {}}
-        onDownloadIcal={() => {}}
+        onDownloadIcal={async () => true}
         onCopyCalendarUrl={() => Promise.resolve(true)}
       />,
     );
 
+    fireEvent.click(
+      view.getByRole("button", { name: "Calendar", exact: true }),
+    );
     expect(view.container.querySelector(".schedule-calendar")).toBeTruthy();
     expect(view.getByAltText("Disco Elysium logo")).toBeTruthy();
     expect(view.getByAltText("Outer Wilds cover")).toBeTruthy();
-    expect(view.getByText("2.5H")).toBeTruthy();
+    expect(view.getByText("2.5h")).toBeTruthy();
   });
 
   test("shows the total elapsed days from the first and last session dates", () => {
@@ -110,7 +119,8 @@ describe("ScheduleView", () => {
       <ScheduleView
         schedule={schedule}
         onScheduleChange={() => {}}
-        onDownloadIcal={() => {}}
+        onDownloadIcal={async () => true}
+        onCopyCalendarUrl={async () => true}
       />,
     );
 
@@ -128,6 +138,9 @@ describe("ScheduleView", () => {
       />,
     );
 
+    fireEvent.click(
+      view.getByRole("button", { name: "Calendar", exact: true }),
+    );
     expect(
       view.container.querySelector(
         ".schedule-calendar__day:not(.schedule-calendar__day--adjacent) time[datetime='2026-03-30']",
@@ -189,6 +202,9 @@ describe("ScheduleView", () => {
       />,
     );
 
+    await user.click(
+      view.getByRole("button", { name: "Calendar", exact: true }),
+    );
     await user.click(
       view.getByRole("button", { name: /move outer wilds session/i }),
     );

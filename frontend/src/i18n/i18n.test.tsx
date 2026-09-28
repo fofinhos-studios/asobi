@@ -23,27 +23,14 @@ describe("i18n", () => {
 
     const chooser = view.getByRole("combobox", { name: "Idioma" });
     expect((chooser as HTMLSelectElement).value).toBe("pt-BR");
-    expect(
-      view.getByRole("heading", { name: "O que você quer jogar?" }),
-    ).toBeTruthy();
+    expect(view.getByRole("heading", { name: "Seus jogos" })).toBeTruthy();
     expect(view.getByRole("heading", { name: "Minha lista" })).toBeTruthy();
-    expect(
-      view.getByRole("button", {
-        name: /continuar para definir rotina/i,
-      }),
-    ).toBeTruthy();
-    expect(
-      view
-        .getByRole("button", { name: /continuar para definir rotina/i })
-        .getAttribute("title"),
-    ).toMatch(/adicione e resolva pelo menos um jogo/i);
+    expect(view.getByRole("link", { name: "Cronograma" })).toBeTruthy();
 
     await user.selectOptions(chooser, "en");
 
     expect(view.getByRole("combobox", { name: "Language" })).toBeTruthy();
-    expect(
-      view.getByRole("heading", { name: "What do you want to play?" }),
-    ).toBeTruthy();
+    expect(view.getByRole("heading", { name: "Your games" })).toBeTruthy();
     expect(view.getByRole("heading", { name: "My Backlog" })).toBeTruthy();
     expect(window.localStorage.getItem("gaming-clock.language")).toBe("en");
 

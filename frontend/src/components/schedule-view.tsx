@@ -15,6 +15,7 @@ import { useTransientFeedback } from "../hooks/use-transient-feedback";
 import { useLanguage } from "../i18n/i18n";
 import type { ListGame, PlaySession, ScheduleResponse } from "../types";
 import { GameCartridge } from "./game-cartridge";
+import { gameVisualStyle, sessionGame } from "./game-visuals";
 import { Button } from "./ui";
 
 interface Props {
@@ -140,6 +141,7 @@ export function ScheduleView({
   onCopyCalendarUrl,
 }: Props) {
   const { language, t } = useLanguage();
+  const [view, setView] = useState<"list" | "calendar">("list");
   const [isDownloading, setIsDownloading] = useState(false);
   const [isCopyingUrl, setIsCopyingUrl] = useState(false);
   const downloadFeedback = useTransientFeedback<"success">();
@@ -236,7 +238,7 @@ export function ScheduleView({
               class="planner-icon planner-heading__icon"
               aria-hidden="true"
             />
-            <span>{t.schedule.generatedHeading}</span>
+            <span>{t.asobi.agenda}</span>
           </h2>
         </div>
 
@@ -365,126 +367,183 @@ export function ScheduleView({
         </output>
       )}
 
-      <div class="schedule-calendar-section">
-        <p class="section-eyebrow">{t.schedule.timeline}</p>
-        <p class="schedule-calendar__move-copy">{t.schedule.moveSessions}</p>
-        <div class="schedule-calendar" aria-label={t.schedule.timeline}>
-          {calendarMonths.map(({ month, days }) => (
-            <section
-              key={month.toISOString()}
-              class="schedule-calendar__month"
-              aria-labelledby={`schedule-month-${month.getUTCFullYear()}-${month.getUTCMonth()}`}
-            >
-              <h3
-                id={`schedule-month-${month.getUTCFullYear()}-${month.getUTCMonth()}`}
-                class="schedule-calendar__month-title"
-              >
-                {monthFormatter.format(month)}
-              </h3>
-              <div class="schedule-calendar__grid">
-                {weekdayDates.map((date) => (
-                  <div
-                    key={date.toISOString()}
-                    class="schedule-calendar__weekday"
-                  >
-                    {weekDayFormatter.format(date)}
+      <fieldset class="asobi-agenda-toggle" aria-label={t.asobi.agenda}>
+        <Button aria-pressed={view === "list"} onClick={() => setView("list")}>
+          <RowsIcon aria-hidden="true" />
+          {t.asobi.list}
+        </Button>
+        <Button
+          aria-pressed={view === "calendar"}
+          onClick={() => setView("calendar")}
+        >
+          <CalendarIcon aria-hidden="true" />
+          {t.asobi.calendar}
+        </Button>
+      </fieldset>
+      {view === "list" && (
+        <ol class="asobi-session-list">
+          {schedule.sessions
+            .map((session, index) => ({ session, index }))
+            .sort((a, b) =>
+              `${a.session.date}T${a.session.start_time}`.localeCompare(
+                `${b.session.date}T${b.session.start_time}`,
+              ),
+            )
+            .map(({ session, index }) => {
+              const game = sessionGame(session, games);
+              return (
+                <li
+                  key={index}
+                  style={game ? gameVisualStyle(game.igdb_id) : undefined}
+                >
+                  <div class="asobi-session-list__date">
+                    <time dateTime={session.date}>
+                      {formatReadableDate(session.date, language)}
+                    </time>
+                    <span>{session.start_time.slice(0, 5)}</span>
                   </div>
-                ))}
-                {days.map((day) => {
-                  const date = new Date(`${day.date}T12:00:00Z`);
-                  const gameSessions = day.sessions.map(
-                    ({ session, index }) => {
-                      const game = games.find(
-                        (candidate) =>
-                          candidate.name.toLocaleLowerCase() ===
-                          session.game_name.toLocaleLowerCase(),
-                      );
-                      const card = game ? (
-                        <GameCartridge
-                          game={game}
-                          plannedHours={session.duration_hours}
-                          startTime={session.start_time}
-                          variant="calendar"
-                        />
-                      ) : (
-                        <div class="schedule-calendar__session-fallback">
-                          <strong>{session.game_name}</strong>
-                          <span>{session.duration_hours.toFixed(1)}h</span>
-                        </div>
-                      );
-
-                      return (
-                        <button
-                          key={`${session.game_name}-${session.date}-${session.start_time}-${index}`}
-                          class="schedule-calendar__session-move"
-                          type="button"
-                          draggable
-                          aria-label={t.schedule.moveSession(session.game_name)}
-                          onDragStart={(event) =>
-                            event.dataTransfer?.setData(
-                              "text/plain",
-                              String(index),
-                            )
-                          }
-                          onKeyDown={(event) => {
-                            if (event.key === "ArrowLeft") {
-                              event.preventDefault();
-                              moveSessionByDays(index, -1);
-                            }
-                            if (event.key === "ArrowRight") {
-                              event.preventDefault();
-                              moveSessionByDays(index, 1);
-                            }
-                          }}
-                        >
-                          {card}
-                        </button>
-                      );
-                    },
-                  );
-
-                  return (
-                    <div
-                      key={day.date}
-                      class={`schedule-calendar__day${
-                        day.sessions.length === 0
-                          ? " schedule-calendar__day--empty"
-                          : ""
-                      }${
-                        day.isCurrentMonth
-                          ? ""
-                          : " schedule-calendar__day--adjacent"
-                      }`}
-                      onDragOver={(event) => event.preventDefault()}
-                      onDrop={(event) => {
-                        event.preventDefault();
-                        const index = Number(
-                          event.dataTransfer?.getData("text/plain"),
-                        );
-                        if (Number.isInteger(index)) {
-                          moveSession(index, day.date);
-                        }
+                  <div class="asobi-session-list__game">
+                    <strong>{session.game_name}</strong>
+                    <span>{t.schedule.hours(session.duration_hours)}</span>
+                  </div>
+                  <label>
+                    <span class="ui-label">{t.asobi.moveDate}</span>
+                    <input
+                      class="ui-input"
+                      type="date"
+                      value={session.date}
+                      aria-label={`${t.asobi.moveDate}: ${session.game_name} ${index + 1}`}
+                      onChange={(e) => {
+                        if (e.currentTarget.value)
+                          moveSession(index, e.currentTarget.value);
                       }}
+                    />
+                  </label>
+                </li>
+              );
+            })}
+        </ol>
+      )}
+      {view === "calendar" && (
+        <div class="schedule-calendar-section">
+          <p class="section-eyebrow">{t.schedule.timeline}</p>
+          <p class="schedule-calendar__move-copy">{t.schedule.moveSessions}</p>
+          <div class="schedule-calendar" aria-label={t.schedule.timeline}>
+            {calendarMonths.map(({ month, days }) => (
+              <section
+                key={month.toISOString()}
+                class="schedule-calendar__month"
+                aria-labelledby={`schedule-month-${month.getUTCFullYear()}-${month.getUTCMonth()}`}
+              >
+                <h3
+                  id={`schedule-month-${month.getUTCFullYear()}-${month.getUTCMonth()}`}
+                  class="schedule-calendar__month-title"
+                >
+                  {monthFormatter.format(month)}
+                </h3>
+                <div class="schedule-calendar__grid">
+                  {weekdayDates.map((date) => (
+                    <div
+                      key={date.toISOString()}
+                      class="schedule-calendar__weekday"
                     >
-                      <div class="schedule-calendar__date">
-                        <time
-                          dateTime={day.date}
-                          aria-label={formatReadableDate(day.date, language)}
-                        >
-                          {date.getUTCDate()}
-                        </time>
-                      </div>
-                      <div class="schedule-calendar__sessions">
-                        {gameSessions}
-                      </div>
+                      {weekDayFormatter.format(date)}
                     </div>
-                  );
-                })}
-              </div>
-            </section>
-          ))}
+                  ))}
+                  {days.map((day) => {
+                    const date = new Date(`${day.date}T12:00:00Z`);
+                    const gameSessions = day.sessions.map(
+                      ({ session, index }) => {
+                        const game = sessionGame(session, games);
+                        const card = game ? (
+                          <GameCartridge
+                            game={game}
+                            plannedHours={session.duration_hours}
+                            startTime={session.start_time}
+                            variant="calendar"
+                          />
+                        ) : (
+                          <div class="schedule-calendar__session-fallback">
+                            <strong>{session.game_name}</strong>
+                            <span>{session.duration_hours.toFixed(1)}h</span>
+                          </div>
+                        );
+
+                        return (
+                          <button
+                            key={`${session.game_name}-${session.date}-${session.start_time}-${index}`}
+                            class="schedule-calendar__session-move"
+                            type="button"
+                            draggable
+                            aria-label={t.schedule.moveSession(
+                              session.game_name,
+                            )}
+                            onDragStart={(event) =>
+                              event.dataTransfer?.setData(
+                                "text/plain",
+                                String(index),
+                              )
+                            }
+                            onKeyDown={(event) => {
+                              if (event.key === "ArrowLeft") {
+                                event.preventDefault();
+                                moveSessionByDays(index, -1);
+                              }
+                              if (event.key === "ArrowRight") {
+                                event.preventDefault();
+                                moveSessionByDays(index, 1);
+                              }
+                            }}
+                          >
+                            {card}
+                          </button>
+                        );
+                      },
+                    );
+
+                    return (
+                      <div
+                        key={day.date}
+                        class={`schedule-calendar__day${
+                          day.sessions.length === 0
+                            ? " schedule-calendar__day--empty"
+                            : ""
+                        }${
+                          day.isCurrentMonth
+                            ? ""
+                            : " schedule-calendar__day--adjacent"
+                        }`}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={(event) => {
+                          event.preventDefault();
+                          const index = Number(
+                            event.dataTransfer?.getData("text/plain"),
+                          );
+                          if (Number.isInteger(index)) {
+                            moveSession(index, day.date);
+                          }
+                        }}
+                      >
+                        <div class="schedule-calendar__date">
+                          <time
+                            dateTime={day.date}
+                            aria-label={formatReadableDate(day.date, language)}
+                          >
+                            {date.getUTCDate()}
+                          </time>
+                        </div>
+                        <div class="schedule-calendar__sessions">
+                          {gameSessions}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }
