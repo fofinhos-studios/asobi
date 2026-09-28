@@ -162,7 +162,12 @@ export function GameListView({
         </div>
         <div class="planner-inline-stats">
           <span>{t.list.count(games.length)}</span>
-          {games.length === 0 && <span>0.0h</span>}
+          {games.length === 0 && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>0.0 h</span>
+            </>
+          )}
         </div>
       </div>
 

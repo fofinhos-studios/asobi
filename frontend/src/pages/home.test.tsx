@@ -769,7 +769,9 @@ describe("HomePage", () => {
     expect(
       view.queryByRole("complementary", { name: /planner status/i }),
     ).toBeNull();
-    expect(within(view.getByRole("main")).getByText(/^0\.0h$/i)).toBeTruthy();
+    expect(
+      within(view.getByRole("main")).getByText(/^0\.0\s*h$/i),
+    ).toBeTruthy();
     expect(view.queryByText(/availability status/i)).toBeNull();
 
     await user.click(view.getByRole("tab", { name: "Result" }));
