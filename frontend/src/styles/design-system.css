@@ -97,6 +97,8 @@
   --motion-normal: 180ms;
   --ease: ease-out;
   --focus-ring: 2px solid var(--ink);
+  --tab-border-width: 1px;
+  --tab-focus-border-width: 2px;
   --layer-dropdown: 10;
   --layer-tooltip: 20;
   --week-slot-size: 1.25rem;
@@ -695,27 +697,39 @@ dd {
 .asobi-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-bottom: var(--rule-strong);
   margin-bottom: var(--space-8);
 }
 .asobi-tabs [role="tab"] {
+  --tab-current-border: var(--tab-border-width);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
   min-height: var(--target);
-  padding: var(--space-4);
-  border: 0;
-  border-right: var(--rule-soft);
-  background: var(--surface);
+  padding: calc(var(--space-4) - var(--tab-current-border));
+  border: var(--tab-current-border) solid var(--muted-foreground);
+  background: transparent;
   color: var(--foreground);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-body);
+  outline: none;
+  box-shadow: none;
+}
+.asobi-tabs [role="tab"] + [role="tab"] {
+  margin-left: calc(-1 * var(--tab-border-width));
 }
 .asobi-tabs [role="tab"][aria-selected="true"] {
-  background: var(--accent);
+  z-index: 1;
+  border-color: var(--foreground);
+  font-weight: var(--weight-strong);
 }
-.asobi-tabs [role="tab"]:hover:not([aria-selected="true"]) {
-  background: var(--muted);
+.asobi-tabs [role="tab"]:hover {
+  border-color: var(--foreground);
+}
+.asobi-tabs [role="tab"]:focus-visible {
+  --tab-current-border: var(--tab-focus-border-width);
+  z-index: 2;
+  border-color: var(--foreground);
 }
 .asobi-tabs__number {
   display: grid;
@@ -1511,7 +1525,8 @@ dd {
   .asobi-tabs [role="tab"] {
     flex-direction: column;
     gap: var(--space-2);
-    padding: var(--space-3) var(--space-1);
+    padding: calc(var(--space-3) - var(--tab-current-border))
+      calc(var(--space-1) - var(--tab-current-border));
     font-size: var(--text-sm);
   }
 
