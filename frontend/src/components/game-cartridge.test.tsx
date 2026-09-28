@@ -73,8 +73,8 @@ describe("GameCartridge", () => {
         .querySelector(".game-cartridge__hero")
         ?.getAttribute("src"),
     ).toBe(game.hero_url);
-    expect(view.getByText("PLAY TIME")).toBeTruthy();
-    expect(view.getByText("27.5H")).toBeTruthy();
+    expect(view.getByText("Play time")).toBeTruthy();
+    expect(view.getByText("27.5h")).toBeTruthy();
     expect(
       view.container
         .querySelector(".platform-icons__icon")
@@ -85,8 +85,40 @@ describe("GameCartridge", () => {
         .querySelector(".game-cartridge__identity")
         ?.querySelector(".game-cartridge__platforms"),
     ).toBeTruthy();
-    expect(view.getByText("GENRE")).toBeTruthy();
+    expect(view.getByText("Genre")).toBeTruthy();
     expect(view.getByText("Adventure")).toBeTruthy();
+  });
+
+  test("uses the cover as a background when a saved hero image fails", async () => {
+    const view = render(<GameCartridge game={game} />);
+    const hero = view.container.querySelector(
+      ".game-cartridge__hero",
+    ) as HTMLImageElement;
+
+    fireEvent.error(hero);
+
+    await waitFor(() => expect(hero.getAttribute("src")).toBe(game.cover_url));
+    fireEvent.load(hero);
+    fireEvent.load(view.getByAltText("Hollow Knight cover"));
+    fireEvent.load(view.getByAltText("Hollow Knight logo"));
+
+    await waitFor(() =>
+      expect(
+        view.container
+          .querySelector(".game-cartridge")
+          ?.getAttribute("aria-busy"),
+      ).toBe("false"),
+    );
+  });
+
+  test("uses the cover as a background when no hero was saved", () => {
+    const view = render(<GameCartridge game={{ ...game, hero_url: "" }} />);
+
+    expect(
+      view.container
+        .querySelector(".game-cartridge__hero")
+        ?.getAttribute("src"),
+    ).toBe(game.cover_url);
   });
 
   test("shows calendar sessions as a clock icon and their planned hours", () => {
@@ -94,7 +126,7 @@ describe("GameCartridge", () => {
       <GameCartridge game={game} plannedHours={2.5} variant="calendar" />,
     );
 
-    expect(view.getByText("2.5H")).toBeTruthy();
+    expect(view.getByText("2.5h")).toBeTruthy();
     const primaryDetail = view
       .getByLabelText("Hollow Knight details")
       .querySelector("div");

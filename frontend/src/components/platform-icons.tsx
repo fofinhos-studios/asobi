@@ -72,15 +72,17 @@ export function PlatformIcons({
       aria-label={`Platforms: ${platforms.join(", ")}`}
     >
       {visibleIcons.map(({ platform, file }) => (
-        <img
-          key={file}
-          class="platform-icons__icon"
-          src={`${PLATFORM_LOGO_BASE_URL}/${file}`}
-          alt=""
-          title={platform}
-          loading="lazy"
-          decoding="async"
-        />
+        <span key={file} class="platform-icons__item">
+          <img
+            class="platform-icons__icon"
+            src={`${PLATFORM_LOGO_BASE_URL}/${file}`}
+            alt=""
+            title={platform}
+            loading="lazy"
+            decoding="async"
+          />
+          <span>{platform === "PC (Microsoft Windows)" ? "PC" : platform}</span>
+        </span>
       ))}
       {hiddenIconCount > 0 && (
         <span

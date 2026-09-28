@@ -15,6 +15,7 @@ import { GAME_GROUPS_ENABLED } from "../config/features";
 import { useLanguage } from "../i18n/i18n";
 import type { GameGroupImport, HLTBCategory, ListGame } from "../types";
 import { GameCartridge } from "./game-cartridge";
+import { gameVisualStyle } from "./game-visuals";
 import { Button } from "./ui";
 
 interface Props {
@@ -171,13 +172,17 @@ export function GameListView({
             class="planner-icon planner-empty-state__icon"
             aria-hidden="true"
           />
-          <p class="planner-empty-state__title">{t.list.emptyTitle}</p>
+          <div>
+            <p class="planner-empty-state__title">{t.asobi.empty}</p>
+            <p>{t.asobi.emptyHint}</p>
+          </div>
         </div>
       ) : (
         <div class="planner-backlog-list">
           {games.map((game, index) => (
             <article
               key={game.igdb_id}
+              style={gameVisualStyle(game.igdb_id)}
               class={`planner-backlog-row${
                 draggedIndex === index ? " planner-backlog-row--dragging" : ""
               }${
@@ -226,6 +231,10 @@ export function GameListView({
               }}
               onDragEnd={resetDragState}
             >
+              <span class="asobi-game-number">
+                <span class="sr-only">{t.asobi.position} </span>
+                {String(index + 1).padStart(2, "0")}
+              </span>
               <GameCartridge game={game} />
               {GAME_GROUPS_ENABLED &&
                 game.group_import_ids?.[0] &&

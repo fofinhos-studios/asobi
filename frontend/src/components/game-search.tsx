@@ -28,7 +28,6 @@ import type {
 } from "../types";
 import { PlatformIcons } from "./platform-icons";
 import { Button, Field, Input } from "./ui";
-import "./game-groups.css";
 
 interface Props {
   games: ListGame[];
@@ -913,17 +912,35 @@ function SearchResultCartridge({
   onClick,
 }: SearchResultCartridgeProps) {
   const { t } = useLanguage();
-  const artworkUrls = [artwork?.hero_url, artwork?.logo_url].filter(
-    (url): url is string => Boolean(url),
+  const [failedArtwork, setFailedArtwork] = useState<string[]>([]);
+  const coverUrl =
+    [game.cover_url, artwork?.cover_url]
+      .filter((url): url is string => Boolean(url))
+      .find((url) => !failedArtwork.includes(previewCoverUrl(url))) ?? "";
+  const heroUrl = [
+    artwork?.hero_url,
+    coverUrl.replace("/t_thumb/", "/t_1080p/"),
+  ]
+    .filter((url): url is string => Boolean(url))
+    .find((url) => !failedArtwork.includes(url));
+  const logoUrl = failedArtwork.includes(artwork?.logo_url ?? "")
+    ? ""
+    : artwork?.logo_url;
+  const artworkUrls = [heroUrl, logoUrl].filter((url): url is string =>
+    Boolean(url),
   );
   const [settledArtwork, setSettledArtwork] = useState<string[]>([]);
   const isArtworkReady =
     !isArtworkLoading &&
     artworkUrls.every((url) => settledArtwork.includes(url));
-  const coverUrl = game.cover_url || artwork?.cover_url || "";
-
   const markArtworkSettled = (url: string) => {
     setSettledArtwork((current) =>
+      current.includes(url) ? current : [...current, url],
+    );
+  };
+  const markArtworkFailed = (url: string) => {
+    markArtworkSettled(url);
+    setFailedArtwork((current) =>
       current.includes(url) ? current : [...current, url],
     );
   };
@@ -944,16 +961,16 @@ function SearchResultCartridge({
       aria-label={t.search.addGame(game.name)}
       aria-busy={isArtworkLoading || !isArtworkReady}
     >
-      {artwork?.hero_url && (
+      {heroUrl && (
         <img
           aria-hidden="true"
           class="planner-result__hero"
-          src={artwork.hero_url}
+          src={heroUrl}
           alt=""
           loading="lazy"
           decoding="async"
-          onLoad={() => markArtworkSettled(artwork.hero_url)}
-          onError={() => markArtworkSettled(artwork.hero_url)}
+          onLoad={() => markArtworkSettled(heroUrl)}
+          onError={() => markArtworkFailed(heroUrl)}
         />
       )}
       <div class="planner-result__wash" aria-hidden="true" />
@@ -968,6 +985,7 @@ function SearchResultCartridge({
             width={56}
             height={80}
             class="planner-result__cover"
+            onError={() => markArtworkFailed(previewCoverUrl(coverUrl))}
           />
         ) : (
           <div class="planner-result__cover planner-result__cover--empty">
@@ -979,18 +997,18 @@ function SearchResultCartridge({
       <div class="planner-result__body">
         <div class="planner-result__row">
           <div class="planner-result__identity">
-            {artwork?.logo_url && (
+            {logoUrl && (
               <img
                 class={`planner-result__logo${
                   isArtworkReady ? "" : " planner-result__logo--loading"
                 }`}
-                src={artwork.logo_url}
+                src={logoUrl}
                 alt={`${game.name} logo`}
                 aria-hidden={!isArtworkReady}
                 loading="lazy"
                 decoding="async"
-                onLoad={() => markArtworkSettled(artwork.logo_url)}
-                onError={() => markArtworkSettled(artwork.logo_url)}
+                onLoad={() => markArtworkSettled(logoUrl)}
+                onError={() => markArtworkFailed(logoUrl)}
               />
             )}
             <h3 class="planner-result__title">{game.name}</h3>
