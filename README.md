@@ -3,20 +3,8 @@
   <a href="https://asobi.fofinhos.studio/">Asobi</a>
 </h1>
 
-<p align="center">Turn your game backlog into a plan you can actually play <img src="https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/clock.svg" width="16" height="16" alt="" align="absmiddle" /></p>
+Search for games and add them to your backlog. Asobi shows estimated playtime for each game and the full list, then schedules play around the days and hours you set. Choose one game at a time or rotate between them. Export the plan as an iCalendar file.
 
-Asobi helps you see how much time your list will take and fit it around your real week.
+Game data comes from [IGDB](https://www.igdb.com/), playtime estimates from [HowLongToBeat](https://howlongtobeat.com/), and logos and banners from [SteamGridDB](https://www.steamgriddb.com/).
 
-## What you can do
-
-- <img src="https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/magnifying-glass.svg" width="16" height="16" alt="" align="absmiddle" /> Search for games and build a personal backlog.
-- <img src="https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/timer.svg" width="16" height="16" alt="" align="absmiddle" /> See estimated playtime for every game and your whole list.
-- <img src="https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/calendar-check.svg" width="16" height="16" alt="" align="absmiddle" /> Tell Asobi which days you play and how much time you have.
-- <img src="https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/shuffle.svg" width="16" height="16" alt="" align="absmiddle" /> Create a schedule that plays games one at a time or rotates between them.
-- <img src="https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/download-simple.svg" width="16" height="16" alt="" align="absmiddle" /> Download your plan as an iCalendar file to add it to your calendar.
-
-## Data credits
-
-Game information is provided by <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/IGDB_logo.svg" width="32" height="16" alt="" align="absmiddle" /> [IGDB](https://www.igdb.com/). Playtime estimates are sourced from <img src="https://howlongtobeat.com/img/icons/apple-touch-icon-57x57.png" width="16" height="16" alt="" align="absmiddle" /> [HowLongToBeat](https://howlongtobeat.com/). Game logos and hero banners are provided by <img src="https://www.steamgriddb.com/static/img/logo-512.png" width="16" height="16" alt="" align="absmiddle" /> [SteamGridDB](https://www.steamgriddb.com/).
-
-<p align="center">Made with <img src="https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/heart.svg" width="16" height="16" alt="love" align="absmiddle" /> by <a href="https://www.fofinhos.studio/">fofinhos.studios</a></p>
+Made by [fofinhos.studios](https://www.fofinhos.studio/).
