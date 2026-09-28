@@ -58,6 +58,26 @@ async def test_steamgriddb_returns_cover_logo_and_hero_for_the_best_name_match(m
 
 
 @pytest.mark.asyncio
+async def test_steamgriddb_keeps_healthy_images_when_one_image_endpoint_fails(monkeypatch):
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if "/search/autocomplete/" in request.url.path:
+            return httpx.Response(200, json={"data": [{"id": 7, "name": "Final Fantasy VII"}]})
+        if "/grids/game/" in request.url.path:
+            return httpx.Response(200, json={"data": [{"url": "https://cdn.example/cover.jpg"}]})
+        if "/heroes/game/" in request.url.path:
+            return httpx.Response(200, json={"data": [{"url": "https://cdn.example/hero.jpg"}]})
+        return httpx.Response(503)
+
+    monkeypatch.setenv("STEAMGRIDDB_API_KEY", "steamgriddb-key")
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        artwork = await SteamGridDBService(http_client=client).get_artwork("Final Fantasy VII")
+
+    assert artwork.cover_url == "https://cdn.example/cover.jpg"
+    assert artwork.logo_url == ""
+    assert artwork.hero_url == "https://cdn.example/hero.jpg"
+
+
+@pytest.mark.asyncio
 async def test_steamgriddb_returns_empty_artwork_without_credentials(monkeypatch):
     monkeypatch.delenv("STEAMGRIDDB_API_KEY", raising=False)
 

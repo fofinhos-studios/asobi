@@ -31,7 +31,7 @@ class SteamGridDBService:
         if game_id is None:
             return GameArtwork()
 
-        cover_response, logo_response, hero_response = await asyncio.gather(
+        responses = await asyncio.gather(
             self._http_client.get(
                 f"{self._base_url}/grids/game/{game_id}",
                 headers=headers,
@@ -51,14 +51,22 @@ class SteamGridDBService:
                 headers=headers,
                 params={"types": "static", "limit": 1},
             ),
+            return_exceptions=True,
         )
-        cover_response.raise_for_status()
-        logo_response.raise_for_status()
-        hero_response.raise_for_status()
+
+        def image_url(response: httpx.Response | BaseException) -> str:
+            if isinstance(response, BaseException):
+                return ""
+            try:
+                response.raise_for_status()
+                return self._first_image_url(response.json())
+            except (httpx.HTTPError, KeyError, TypeError, ValueError):
+                return ""
+
         return GameArtwork(
-            cover_url=self._first_image_url(cover_response.json()),
-            logo_url=self._first_image_url(logo_response.json()),
-            hero_url=self._first_image_url(hero_response.json()),
+            cover_url=image_url(responses[0]),
+            logo_url=image_url(responses[1]),
+            hero_url=image_url(responses[2]),
         )
 
     @staticmethod

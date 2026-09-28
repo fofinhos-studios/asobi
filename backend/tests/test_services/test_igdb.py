@@ -4,6 +4,41 @@ import pytest
 from gamingclock.services.igdb import IGDBService
 
 
+@pytest.mark.asyncio
+async def test_igdb_artwork_uses_a_landscape_image_for_the_card_background(monkeypatch):
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.host == "id.twitch.tv":
+            return _token_response()
+        assert request.url.path == "/v4/games"
+        assert "where id = 7;" in request.content.decode()
+        return httpx.Response(
+            200,
+            json=[
+                {
+                    "cover": {"url": "//images.igdb.com/igdb/image/upload/t_thumb/cover.jpg"},
+                    "artworks": [
+                        {"url": "//images.igdb.com/igdb/image/upload/t_thumb/portrait.jpg", "width": 600, "height": 900}
+                    ],
+                    "screenshots": [
+                        {
+                            "url": "//images.igdb.com/igdb/image/upload/t_thumb/landscape.jpg",
+                            "width": 1920,
+                            "height": 1080,
+                        }
+                    ],
+                }
+            ],
+        )
+
+    monkeypatch.setenv("IGDB_CLIENT_ID", "client-id")
+    monkeypatch.setenv("IGDB_CLIENT_SECRET", "client-secret")
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        artwork = await IGDBService(http_client=client, token_client=client).get_artwork(7)
+
+    assert artwork.cover_url == "https://images.igdb.com/igdb/image/upload/t_cover_big/cover.jpg"
+    assert artwork.hero_url == "https://images.igdb.com/igdb/image/upload/t_1080p/landscape.jpg"
+
+
 def _token_response() -> httpx.Response:
     return httpx.Response(
         200,

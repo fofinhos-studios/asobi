@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import AsyncMock, patch
 
 from gamingclock.models.catalog import GameArtwork
@@ -104,6 +105,22 @@ def test_resolve_batch_preserves_the_requested_order(client):
     assert [game["igdb_id"] for game in response.json()["games"]] == [2, 1]
 
 
+def test_resolve_batch_returns_unresolved_results_after_its_deadline(client):
+    async def never_resolves(*_args):
+        await asyncio.Event().wait()
+
+    games = [{"igdb_id": index + 1, "name": f"Game {index + 1}"} for index in range(50)]
+    with (
+        patch("gamingclock.routers.games._resolve_request", new=AsyncMock(side_effect=never_resolves)),
+        patch("gamingclock.routers.games.RESOLVE_BATCH_DEADLINE_SECONDS", 0.01),
+    ):
+        response = client.post("/games/resolve-batch", json={"games": games})
+
+    assert response.status_code == 200
+    assert [game["igdb_id"] for game in response.json()["games"]] == list(range(1, 51))
+    assert {game["hltb_status"] for game in response.json()["games"]} == {"unresolved"}
+
+
 def test_resolve_game_includes_steamgriddb_artwork(client):
     with (
         patch("gamingclock.routers.games.igdb_service") as mock_igdb,
@@ -139,6 +156,32 @@ def test_resolve_game_includes_steamgriddb_artwork(client):
     assert data["logo_url"] == "https://cdn.example/ff7-logo.png"
     assert data["hero_url"] == "https://cdn.example/ff7-hero.jpg"
     mock_steamgriddb.get_artwork.assert_awaited_once_with("Final Fantasy VII")
+
+
+def test_get_game_artwork_fills_missing_hero_from_igdb(client):
+    with (
+        patch("gamingclock.routers.games.steamgriddb_service") as mock_steamgriddb,
+        patch("gamingclock.routers.games.igdb_service") as mock_igdb,
+    ):
+        mock_steamgriddb.get_artwork = AsyncMock(
+            return_value=GameArtwork(cover_url="https://cdn.example/cover.jpg", logo_url="https://cdn.example/logo.png")
+        )
+        mock_igdb.get_artwork = AsyncMock(
+            return_value=GameArtwork(
+                cover_url="https://images.igdb.com/fallback-cover.jpg",
+                hero_url="https://images.igdb.com/fallback-hero.jpg",
+            )
+        )
+
+        response = client.get("/games/artwork", params={"igdb_id": 7, "name": "Final Fantasy VII"})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "cover_url": "https://cdn.example/cover.jpg",
+        "logo_url": "https://cdn.example/logo.png",
+        "hero_url": "https://images.igdb.com/fallback-hero.jpg",
+    }
+    mock_igdb.get_artwork.assert_awaited_once_with(7)
 
 
 def test_get_game_artwork_returns_only_search_card_artwork(client):

@@ -27,6 +27,7 @@ igdb_service = IGDBService()
 steamgriddb_service = SteamGridDBService()
 SEARCH_ENRICHMENT_LIMIT = 8
 RESOLVE_BATCH_CONCURRENCY = 4
+RESOLVE_BATCH_DEADLINE_SECONDS = 10.0
 DEFAULT_WARM_CACHE_GAME_LIMIT = 20
 MAX_WARM_CACHE_GAME_LIMIT = 50
 logger = logging.getLogger(__name__)
@@ -53,17 +54,39 @@ async def resolve_games(request: ResolveGamesRequest) -> ResolveGamesResponse:
     semaphore = asyncio.Semaphore(RESOLVE_BATCH_CONCURRENCY)
 
     async def resolve_one(game: ResolveGameRequest) -> ListGame:
-        async with semaphore:
-            return await _resolve_request(game)
+        try:
+            async with semaphore:
+                return await _resolve_request(game)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.warning("Batch game resolution failed igdb_id=%d", game.igdb_id, exc_info=True)
+            return _unresolved_request_game(game)
 
-    return ResolveGamesResponse(games=list(await asyncio.gather(*(resolve_one(game) for game in request.games))))
+    tasks = [asyncio.create_task(resolve_one(game)) for game in request.games]
+    _, pending = await asyncio.wait(tasks, timeout=RESOLVE_BATCH_DEADLINE_SECONDS)
+    if pending:
+        logger.warning(
+            "Batch game resolution timed out timeout_seconds=%.1f unresolved_count=%d",
+            RESOLVE_BATCH_DEADLINE_SECONDS,
+            len(pending),
+        )
+        for task in pending:
+            task.cancel()
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    games = [
+        result if isinstance(result, ListGame) else _unresolved_request_game(request.games[index])
+        for index, result in enumerate(results)
+    ]
+    return ResolveGamesResponse(games=games)
 
 
 @router.get("/artwork", response_model=GameArtwork)
 async def get_game_artwork(response: Response, igdb_id: int, name: str) -> GameArtwork:
     """Return card artwork through a cacheable, game-specific URL."""
     response.headers["Cache-Control"] = "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
-    return await _get_steamgriddb_artwork(name)
+    return await _get_game_artwork(name, igdb_id)
 
 
 @router.post("/artwork", response_model=GameArtwork)
@@ -71,7 +94,7 @@ async def get_game_artwork_legacy(request: ResolveGameRequest) -> GameArtwork:
     """Keep the original endpoint available while clients migrate to cacheable GETs."""
     if not request.name:
         return GameArtwork()
-    return await _get_steamgriddb_artwork(request.name)
+    return await _get_game_artwork(request.name, request.igdb_id)
 
 
 @router.get("/internal/warm-popular", response_model=CacheWarmResult)
@@ -83,7 +106,7 @@ async def warm_popular_cache(request: Request) -> CacheWarmResult:
 
 async def _enrich_catalog_game(catalog_game: CatalogGame) -> ListGame:
     artwork, hltb_results = await asyncio.gather(
-        _get_steamgriddb_artwork(catalog_game.name),
+        _get_game_artwork(catalog_game.name, catalog_game.igdb_id),
         hltb_service.search(catalog_game.name),
     )
     if not hltb_results:
@@ -139,6 +162,22 @@ async def _resolve_request(request: ResolveGameRequest) -> ListGame:
     return await _enrich_catalog_game(catalog_game)
 
 
+async def _get_game_artwork(game_name: str, igdb_id: int) -> GameArtwork:
+    artwork = await _get_steamgriddb_artwork(game_name)
+    if igdb_id <= 0 or (artwork.cover_url and artwork.hero_url):
+        return artwork
+    try:
+        fallback = await igdb_service.get_artwork(igdb_id)
+    except (httpx.HTTPError, KeyError, TypeError, ValueError, RuntimeError):
+        logger.warning("IGDB artwork lookup failed")
+        return artwork
+    return GameArtwork(
+        cover_url=artwork.cover_url or fallback.cover_url,
+        logo_url=artwork.logo_url,
+        hero_url=artwork.hero_url or fallback.hero_url,
+    )
+
+
 async def _get_steamgriddb_artwork(game_name: str) -> GameArtwork:
     started_at = asyncio.get_running_loop().time()
     try:
@@ -170,6 +209,21 @@ def _unresolved_game(catalog_game: CatalogGame, artwork: GameArtwork) -> ListGam
         platforms=catalog_game.platforms,
         release_year=catalog_game.release_year,
         rating=catalog_game.rating,
+        hltb_status=HLTBStatus.UNRESOLVED,
+    )
+
+
+def _unresolved_request_game(request: ResolveGameRequest) -> ListGame:
+    """Keep batch responses useful when a provider fails before catalog lookup completes."""
+    return ListGame(
+        igdb_id=request.igdb_id,
+        name=request.name or f"Game {request.igdb_id}",
+        cover_url=request.cover_url,
+        summary=request.summary,
+        genres=request.genres,
+        platforms=request.platforms,
+        release_year=request.release_year,
+        rating=request.rating,
         hltb_status=HLTBStatus.UNRESOLVED,
     )
 

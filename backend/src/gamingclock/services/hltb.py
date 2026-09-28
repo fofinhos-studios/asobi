@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 
 class HLTBSearchToken(BaseModel):
     token: str
-    hp_key: str = Field(validation_alias="hpKey")
-    hp_value: str = Field(validation_alias="hpVal")
+    hp_key: str | None = Field(default=None, validation_alias="hpKey")
+    hp_value: str | None = Field(default=None, validation_alias="hpVal")
 
 
 class HLTBSearchResult(BaseModel):
@@ -78,6 +78,7 @@ class HLTBWebClient:
         )
         token_response.raise_for_status()
         token = HLTBSearchToken.model_validate(token_response.json())
+        proof_available = bool(token.hp_key and token.hp_value)
 
         payload = {
             "searchType": "games",
@@ -102,17 +103,17 @@ class HLTBWebClient:
                 "randomizer": 0,
             },
             "useCache": True,
-            token.hp_key: token.hp_value,
         }
+        if proof_available:
+            payload[token.hp_key] = token.hp_value
+        search_headers = {**headers, "x-auth-token": token.token}
+        if proof_available:
+            search_headers["x-hp-key"] = token.hp_key
+            search_headers["x-hp-val"] = token.hp_value
         search_response = await http_client.post(
             f"{self._base_url}/api/search/site",
             json=payload,
-            headers={
-                **headers,
-                "x-auth-token": token.token,
-                "x-hp-key": token.hp_key,
-                "x-hp-val": token.hp_value,
-            },
+            headers=search_headers,
         )
         search_response.raise_for_status()
         return HLTBSearchResponse.model_validate(search_response.json()).data
