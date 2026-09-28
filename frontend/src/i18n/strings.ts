@@ -10,8 +10,6 @@ export const strings = {
       result: "View result",
       settingsTitle: "Schedule your time",
       resultTitle: "Your game plan",
-      resultHint:
-        "Your ordered games and sessions. Move a date to adjust your plan.",
     },
     asobi: {
       periodConflict:
@@ -45,11 +43,9 @@ export const strings = {
       cover: (name: string) => `${name} cover`,
       overlap:
         "Games share the same period. Numbers show their order in your list.",
-      noPlan: "Add games and set your hours to see your route.",
+      noPlan: "Add games in Pick games and set your availability in Schedule.",
       ambiguous: "Dates unavailable: more than one edition has this name.",
-      ready: "Your next games, in order.",
-      empty: "Your next adventure starts here.",
-      emptyHint: "Search for a game above to start your list.",
+      empty: "Search by title above to add a game.",
       dateRange: "First / last session",
       hours: "hours",
       sessions: (count: number) => `${count} session${count === 1 ? "" : "s"}`,
@@ -269,8 +265,6 @@ export const strings = {
       result: "Ver resultado",
       settingsTitle: "Planeje seu tempo",
       resultTitle: "Seu plano de jogos",
-      resultHint:
-        "Seus jogos e sessões em ordem. Altere uma data para ajustar o plano.",
     },
     asobi: {
       periodConflict:
@@ -304,11 +298,10 @@ export const strings = {
       cover: (name: string) => `Capa de ${name}`,
       overlap:
         "Os jogos compartilham o mesmo período. Os números indicam a ordem na lista.",
-      noPlan: "Adicione jogos e defina seus horários para ver a sequência.",
+      noPlan:
+        "Adicione jogos em Escolher jogos e defina sua disponibilidade em Horários.",
       ambiguous: "Datas indisponíveis: mais de uma edição tem este nome.",
-      ready: "Seus próximos jogos, em ordem.",
-      empty: "Sua próxima aventura começa aqui.",
-      emptyHint: "Busque um jogo acima para começar sua lista.",
+      empty: "Busque pelo título acima para adicionar um jogo.",
       dateRange: "Primeira / última sessão",
       hours: "horas",
       sessions: (count: number) => `${count} sess${count === 1 ? "ão" : "ões"}`,

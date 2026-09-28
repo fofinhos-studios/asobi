@@ -8,7 +8,6 @@ import {
   ListBulletsIcon,
   PencilSimpleIcon,
   TrashIcon,
-  TrophyIcon,
 } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { GAME_GROUPS_ENABLED } from "../config/features";
@@ -173,14 +172,7 @@ export function GameListView({
 
       {games.length === 0 ? (
         <div class="planner-empty-state">
-          <TrophyIcon
-            class="planner-icon planner-empty-state__icon"
-            aria-hidden="true"
-          />
-          <div>
-            <p class="planner-empty-state__title">{t.asobi.empty}</p>
-            <p>{t.asobi.emptyHint}</p>
-          </div>
+          <p>{t.asobi.empty}</p>
         </div>
       ) : (
         <div class="planner-backlog-list">

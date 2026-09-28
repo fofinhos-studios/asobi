@@ -1,8 +1,4 @@
-import {
-  CalendarBlankIcon,
-  ClockIcon,
-  SlidersHorizontalIcon,
-} from "@phosphor-icons/react";
+import { ClockIcon, SlidersHorizontalIcon } from "@phosphor-icons/react";
 import { useState } from "preact/hooks";
 import { useLanguage } from "../i18n/i18n";
 import type {
@@ -77,10 +73,6 @@ export function PlannerControls(props: Props) {
               }}
             />
           </Field>
-          <p class="asobi-control__hint">
-            <CalendarBlankIcon aria-hidden="true" />
-            {t.asobi.ready}
-          </p>
         </div>
         <div class="asobi-control">
           <Field label={t.schedule.planningMode} controlId="planning-mode">

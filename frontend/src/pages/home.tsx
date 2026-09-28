@@ -92,7 +92,6 @@ export function HomePage() {
           schedule={
             <>
               <h1 class="asobi-step-heading">{t.workflow.resultTitle}</h1>
-              <p class="asobi-step-hint">{t.workflow.resultHint}</p>
               <div class="asobi-result">
                 <GameRoute
                   games={p.games}

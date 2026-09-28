@@ -107,7 +107,7 @@ export function DesignSystemGallery() {
       </header>
       <main class="asobi-gallery">
         <p class="ui-label">Asobi / Design system</p>
-        <h1>Play has a place.</h1>
+        <h1>Components & states</h1>
         <p>General Sans + Martian Mono · 0123456789 · ÁÉÍÓÚ ç ã</p>
         <section>
           <h2>Surfaces & signals</h2>

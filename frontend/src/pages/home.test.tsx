@@ -778,7 +778,9 @@ describe("HomePage", () => {
 
     const activePanel = view.getByRole("main");
     expect(
-      within(activePanel).getByText(/add games and set your hours/i),
+      within(activePanel).getByText(
+        /add games in pick games and set your availability in schedule/i,
+      ),
     ).toBeTruthy();
     expect(within(activePanel).getByText(/0 hours per week/i)).toBeTruthy();
   });
