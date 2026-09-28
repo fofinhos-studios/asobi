@@ -6,7 +6,7 @@ The visual system adapts Hon’s numbered image cards, flat controls, compact/ex
 
 - `frontend/src/styles/design-system.css` owns fonts, primitive/semantic tokens, component rules, states, motion and responsive layouts. `index.css` imports Tailwind and this file.
 - `GameCartridge` renders compact game spines with background artwork and no platform information. Library and route order markers share circular station tokens; `game-visuals.ts` assigns stable ID-based pastel tokens and matches session names only when unique.
-- `PlannerTabs` presents Pick games → Schedule → Result, with keyboard navigation and back/continue controls. Panels stay mounted to preserve drafts. `PlannerControls` owns the second panel; `GameRoute` and `ScheduleView` show the final result. `use-planner.ts` owns application operations and persistence.
+- `PlannerTabs` presents Pick games → Schedule → Result, with keyboard navigation. Tabs are the sole step navigation; spacing replaces decorative page dividers. Focus is drawn on the control’s edge, without a second separated outline. Panels stay mounted to preserve drafts. `PlannerControls` owns the second panel; `GameRoute` and `ScheduleView` show the final result. `use-planner.ts` owns application operations and persistence.
 - `/?design-system` loads only in development. Its examples include real library/route/agenda components, editable/reorderable samples, missing/broken images and long titles.
 - General Sans, Martian Mono and their licenses live in `public/fonts`. The 遊 SVG contains paths from Noto Sans JP; it requires no Japanese font on the device.
 

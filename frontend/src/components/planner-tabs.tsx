@@ -1,9 +1,7 @@
-import { ArrowLeftIcon, ArrowRightIcon } from "@phosphor-icons/react";
 import type { ComponentChildren } from "preact";
-import { useLayoutEffect, useRef } from "preact/hooks";
+import { useRef } from "preact/hooks";
 import { useLanguage } from "../i18n/i18n";
 import type { PlannerTab } from "../services/planner-storage";
-import { Button } from "./ui";
 
 const steps: PlannerTab[] = ["games", "availability", "schedule"];
 interface Props {
@@ -17,19 +15,6 @@ interface Props {
 export function PlannerTabs({ activeTab, onChange, ...panels }: Props) {
   const { t } = useLanguage();
   const buttons = useRef<Array<HTMLButtonElement | null>>([]);
-  const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const focusPanel = useRef(false);
-  const current = steps.indexOf(activeTab);
-  useLayoutEffect(() => {
-    if (focusPanel.current) {
-      panelRefs.current[current]?.focus();
-      focusPanel.current = false;
-    }
-  }, [current]);
-  const advance = (index: number) => {
-    focusPanel.current = true;
-    onChange(steps[index]);
-  };
   return (
     <div class="asobi-workflow">
       <div class="asobi-tabs" role="tablist" aria-label={t.workflow.label}>
@@ -66,12 +51,9 @@ export function PlannerTabs({ activeTab, onChange, ...panels }: Props) {
           </button>
         ))}
       </div>
-      {steps.map((step, index) => (
+      {steps.map((step) => (
         <div
           key={step}
-          ref={(el) => {
-            panelRefs.current[index] = el;
-          }}
           class={`asobi-tab-panel asobi-tab-panel--${step}`}
           role="tabpanel"
           id={`planner-panel-${step}`}
@@ -82,24 +64,6 @@ export function PlannerTabs({ activeTab, onChange, ...panels }: Props) {
           {panels[step]}
         </div>
       ))}
-      <div class="asobi-step-actions">
-        {current > 0 && (
-          <Button onClick={() => advance(current - 1)}>
-            <ArrowLeftIcon aria-hidden="true" />
-            {t.workflow.back}
-          </Button>
-        )}
-        {current < steps.length - 1 && (
-          <Button
-            class="asobi-step-actions__next"
-            variant="primary"
-            onClick={() => advance(current + 1)}
-          >
-            {current === 0 ? t.workflow.next : t.workflow.result}
-            <ArrowRightIcon aria-hidden="true" />
-          </Button>
-        )}
-      </div>
     </div>
   );
 }

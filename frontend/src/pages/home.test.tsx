@@ -479,21 +479,20 @@ describe("HomePage", () => {
     ).toBeNull();
   });
 
-  test("navigates through games, settings and the result with focused panels", async () => {
+  test("navigates with tabs without duplicate bottom navigation", async () => {
     const user = userEvent.setup();
     const view = render(<HomePage />);
     expect(view.getByRole("tabpanel", { name: "Pick games" })).toBeTruthy();
-    await user.click(view.getByRole("button", { name: "Set your schedule" }));
-    expect(view.getByRole("tabpanel", { name: "Schedule" })).toBe(
-      document.activeElement,
-    );
+    expect(
+      view.queryByRole("button", { name: "Set your schedule" }),
+    ).toBeNull();
+    await user.click(view.getByRole("tab", { name: "Schedule" }));
+    expect(view.getByRole("tabpanel", { name: "Schedule" })).toBeTruthy();
     expect(view.queryByRole("region", { name: "Your games" })).toBeNull();
-    await user.click(view.getByRole("button", { name: "View result" }));
-    expect(view.getByRole("tabpanel", { name: "Result" })).toBe(
-      document.activeElement,
-    );
+    await user.click(view.getByRole("tab", { name: "Result" }));
+    expect(view.getByRole("tabpanel", { name: "Result" })).toBeTruthy();
     expect(view.getByRole("complementary", { name: "Schedule" })).toBeTruthy();
-    await user.click(view.getByRole("button", { name: "Back" }));
+    await user.click(view.getByRole("tab", { name: "Schedule" }));
     expect(view.getByRole("tabpanel", { name: "Schedule" })).toBeTruthy();
   });
 

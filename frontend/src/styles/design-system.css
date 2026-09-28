@@ -96,7 +96,8 @@
   --motion-fast: 120ms;
   --motion-normal: 180ms;
   --ease: ease-out;
-  --focus-ring: 2px solid var(--ink);
+  --focus-width: 2px;
+  --focus-ring: var(--focus-width) solid var(--ink);
   --tab-border-width: 1px;
   --tab-focus-border-width: 2px;
   --layer-dropdown: 10;
@@ -165,7 +166,7 @@ a {
 }
 :focus-visible {
   outline: var(--focus-ring);
-  outline-offset: var(--space-1);
+  outline-offset: calc(-1 * var(--focus-width));
 }
 [tabindex="-1"]:focus:not(:focus-visible) {
   outline: none;
@@ -333,7 +334,7 @@ dd {
   }
 }
 
-/* Page composition: Hon's natural document scroll and 3:2 dashboard. */
+/* Page composition: open spacing between the header, tabs and active panel. */
 .asobi-shell {
   max-width: var(--page-max);
   margin: auto;
@@ -345,7 +346,6 @@ dd {
   align-items: center;
   gap: var(--space-6);
   padding: var(--space-5) 0;
-  border-bottom: var(--rule);
 }
 .asobi-brand {
   display: flex;
@@ -392,7 +392,6 @@ dd {
   font-size: var(--text-sm);
 }
 .asobi-settings {
-  border-bottom: var(--rule);
   padding: var(--space-6) 0;
 }
 .asobi-controls {
@@ -470,7 +469,7 @@ dd {
   flex: none;
 }
 .asobi-footer {
-  border-top: var(--rule);
+  margin-top: var(--space-8);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -708,23 +707,20 @@ dd {
   gap: var(--space-3);
   min-height: var(--target);
   padding: calc(var(--space-4) - var(--tab-current-border));
-  border: var(--tab-current-border) solid var(--muted-foreground);
+  border: var(--tab-current-border) solid transparent;
   background: transparent;
   color: var(--foreground);
   font-weight: var(--weight-body);
   outline: none;
   box-shadow: none;
 }
-.asobi-tabs [role="tab"] + [role="tab"] {
-  margin-left: calc(-1 * var(--tab-border-width));
-}
 .asobi-tabs [role="tab"][aria-selected="true"] {
-  z-index: 1;
-  border-color: var(--foreground);
   font-weight: var(--weight-strong);
 }
-.asobi-tabs [role="tab"]:hover {
-  border-color: var(--foreground);
+.asobi-tabs [role="tab"][aria-selected="true"] > span:last-child {
+  text-decoration: underline;
+  text-decoration-thickness: var(--tab-focus-border-width);
+  text-underline-offset: var(--space-2);
 }
 .asobi-tabs [role="tab"]:focus-visible {
   --tab-current-border: var(--tab-focus-border-width);
@@ -756,16 +752,6 @@ dd {
 .asobi-step-hint {
   color: var(--muted-foreground);
   margin-bottom: var(--space-6);
-}
-.asobi-step-actions {
-  display: flex;
-  gap: var(--space-3);
-  margin-top: var(--space-8);
-  padding-top: var(--space-4);
-  border-top: var(--rule);
-}
-.asobi-step-actions__next {
-  margin-left: auto;
 }
 .asobi-result > .asobi-route {
   border: 0;
@@ -963,7 +949,7 @@ dd {
 }
 .planner-backlog-row--active {
   outline: var(--focus-ring);
-  outline-offset: var(--space-1);
+  outline-offset: calc(-1 * var(--focus-width));
 }
 
 /* Route: order is real data, the connecting line is its only ornament. */
