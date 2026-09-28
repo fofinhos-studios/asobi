@@ -1,4 +1,4 @@
-import type { PlannerTab } from "../components/planner-tabs";
+type PlannerTab = "games" | "availability" | "schedule";
 import type {
   DayAvailability,
   GameList,

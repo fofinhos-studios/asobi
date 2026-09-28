@@ -204,14 +204,25 @@ export async function resolveGameGroupSelection(
   groupKey: string,
   sourceMemberIds: string[],
 ): Promise<GameGroupSelectionResolution[]> {
-  const response = await request(`${API_BASE}/game-groups/resolve-selection`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      group_key: groupKey,
-      source_member_ids: sourceMemberIds,
-    }),
-  });
+  const response = await request(
+    `${API_BASE}/game-groups/resolve-selection`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        group_key: groupKey,
+        source_member_ids: sourceMemberIds,
+      }),
+    },
+    "Could not resolve game group selection.",
+    "groups",
+  );
+  if (!response.ok)
+    throw await parseError(
+      response,
+      "Could not resolve game group selection.",
+      "groups",
+    );
   const data = await response.json();
   return data.resolutions;
 }

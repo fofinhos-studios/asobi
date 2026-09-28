@@ -13,7 +13,7 @@ import type {
   PlanningMode,
   WeeklyAvailability,
 } from "../types";
-import { Button } from "./ui";
+import { Button, Field, Input, Select } from "./ui";
 
 const START_MINUTES = 6 * 60;
 const END_MINUTES = 24 * 60;
@@ -197,6 +197,7 @@ export function AvailabilityForm({
   const [events, setEvents] = useState<CalendarEvent[]>(() =>
     eventsFromAvailability(availability),
   );
+  const [periodError, setPeriodError] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const didCreateDrag = useRef(false);
   const lastEmittedAvailability = useRef<WeeklyAvailability | null | undefined>(
@@ -455,6 +456,57 @@ export function AvailabilityForm({
     );
   };
 
+  const updatePeriod = (id: string, update: Partial<CalendarEvent>) => {
+    const current = events.find((item) => item.id === id);
+    if (!current) return;
+    const next = { ...current, ...update };
+    if (
+      !Number.isFinite(next.startMinutes) ||
+      !Number.isFinite(next.durationMinutes) ||
+      next.durationMinutes < SLOT_MINUTES ||
+      next.startMinutes % SLOT_MINUTES !== 0 ||
+      next.durationMinutes % SLOT_MINUTES !== 0 ||
+      next.startMinutes < START_MINUTES ||
+      next.startMinutes + next.durationMinutes > END_MINUTES ||
+      overlaps(events, next, id)
+    ) {
+      setPeriodError(true);
+      return;
+    }
+    setPeriodError(false);
+    commitEvents(events.map((item) => (item.id === id ? next : item)));
+  };
+  const addFreePeriod = () => {
+    for (let day = 0; day < 7; day++) {
+      for (
+        let start = START_MINUTES;
+        start < END_MINUTES;
+        start += SLOT_MINUTES
+      ) {
+        if (
+          !overlaps(events, {
+            day,
+            startMinutes: start,
+            durationMinutes: SLOT_MINUTES,
+          })
+        ) {
+          commitEvents([
+            ...events,
+            {
+              id: `new-${nextEventId.current++}`,
+              day,
+              startMinutes: start,
+              durationMinutes: SLOT_MINUTES,
+            },
+          ]);
+          setPeriodError(false);
+          return;
+        }
+      }
+    }
+    setPeriodError(true);
+  };
+
   const totalMinutes = events.reduce(
     (total, event) => total + event.durationMinutes,
     0,
@@ -544,7 +596,7 @@ export function AvailabilityForm({
                       key={minutes}
                       type="button"
                       class="availability-week__slot"
-                      aria-label={`${day} at ${formatTime(minutes)}`}
+                      aria-label={t.asobi.slot(day, formatTime(minutes))}
                       onClick={() => {
                         if (didCreateDrag.current) {
                           didCreateDrag.current = false;
@@ -563,7 +615,11 @@ export function AvailabilityForm({
                     key={calendarEvent.id}
                     type="button"
                     class="availability-week__event"
-                    aria-label={`${day}, ${formatDuration(calendarEvent.durationMinutes)} from ${formatTime(calendarEvent.startMinutes)}`}
+                    aria-label={t.asobi.period(
+                      day,
+                      formatDuration(calendarEvent.durationMinutes),
+                      formatTime(calendarEvent.startMinutes),
+                    )}
                     style={{
                       top: `${((calendarEvent.startMinutes - START_MINUTES) / (END_MINUTES - START_MINUTES)) * 100}%`,
                       height: `${(calendarEvent.durationMinutes / (END_MINUTES - START_MINUTES)) * 100}%`,
@@ -610,6 +666,73 @@ export function AvailabilityForm({
         </div>
       </div>
 
+      <details class="asobi-periods">
+        <summary>{t.asobi.periods}</summary>
+        {events.map((item, index) => (
+          <div key={item.id} class="asobi-period-row">
+            <Field label={t.asobi.day} controlId={`period-day-${index}`}>
+              <Select
+                id={`period-day-${index}`}
+                value={item.day}
+                onChange={(e) =>
+                  updatePeriod(item.id, { day: Number(e.currentTarget.value) })
+                }
+              >
+                {t.availability.days.map((day, dayIndex) => (
+                  <option key={day} value={dayIndex}>
+                    {day}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t.asobi.time} controlId={`period-time-${index}`}>
+              <Input
+                id={`period-time-${index}`}
+                type="time"
+                min="06:00"
+                max="23:30"
+                step="1800"
+                value={formatTime(item.startMinutes)}
+                onChange={(e) => {
+                  const [hours, minutes] = e.currentTarget.value
+                    .split(":")
+                    .map(Number);
+                  updatePeriod(item.id, { startMinutes: hours * 60 + minutes });
+                }}
+              />
+            </Field>
+            <Field label={t.asobi.duration} controlId={`period-hours-${index}`}>
+              <Input
+                id={`period-hours-${index}`}
+                type="number"
+                min="0.5"
+                max="18"
+                step="0.5"
+                value={item.durationMinutes / 60}
+                onChange={(e) =>
+                  updatePeriod(item.id, {
+                    durationMinutes: e.currentTarget.valueAsNumber * 60,
+                  })
+                }
+              />
+            </Field>
+            <Button
+              aria-label={`${t.asobi.removePeriod} ${index + 1}`}
+              onClick={() =>
+                commitEvents(events.filter((event) => event.id !== item.id))
+              }
+            >
+              {t.asobi.removePeriod}
+            </Button>
+          </div>
+        ))}
+        <Button onClick={addFreePeriod}>{t.asobi.addPeriod}</Button>
+        {periodError && (
+          <p role="alert" class="planner-error">
+            {t.asobi.periodConflict}
+          </p>
+        )}
+      </details>
       <output class="availability-week__summary">
         {t.availability.form.weeklyTotal(formatDuration(totalMinutes))}
       </output>
