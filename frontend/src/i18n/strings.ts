@@ -68,17 +68,6 @@ export const strings = {
       deleteLastBacklogHint: "Create another backlog before deleting this one.",
       defaultBacklog: "My Backlog",
       newBacklogName: (number: number) => `Backlog ${number}`,
-      steps: {
-        games: {
-          title: "What do you want to play?",
-        },
-        availability: {
-          title: "When do you play?",
-        },
-        schedule: {
-          title: "Build your game plan",
-        },
-      },
       prerequisites: {
         games: "Add at least one game to the backlog to update your schedule.",
         availability: "Set your weekly availability to update your schedule.",
@@ -89,31 +78,6 @@ export const strings = {
       scheduleFailed: "Schedule generation failed",
       downloadFailed: "iCal download failed",
       calendarUrlFailed: "Could not copy the calendar URL",
-      theme: {
-        label: "Theme",
-        dark: "Dark",
-        light: "Light",
-        switchTo: (theme: string) => `Switch to ${theme} theme`,
-      },
-    },
-    tabs: {
-      nav: "Plan your game time step by step",
-      steps: "Planner steps",
-      addGames: "Build your list",
-      availability: "Set your routine",
-      schedule: "Plan sessions",
-      complete: "Complete",
-      current: "Current step",
-      notStarted: "Not started",
-      backTo: (label: string) => `Back to ${label}`,
-      continueTo: (label: string) => `Continue to ${label}`,
-      continue: "Continue",
-      firstStep: "You are at the first step.",
-      lastStep: "This is the final step.",
-      gamesRequired: "Add and resolve at least one game before continuing.",
-      availabilityRequired: "Set your weekly play time before continuing.",
-      aria: (number: number, label: string, id: string, status: string) =>
-        `Step ${number}: ${label} (${id}), ${status}`,
     },
     search: {
       title: "Find your games",
@@ -351,17 +315,6 @@ export const strings = {
       deleteLastBacklogHint: "Crie outra lista antes de excluir esta.",
       defaultBacklog: "Minha lista",
       newBacklogName: (number: number) => `Lista ${number}`,
-      steps: {
-        games: {
-          title: "O que você quer jogar?",
-        },
-        availability: {
-          title: "Quando você joga?",
-        },
-        schedule: {
-          title: "Monte seu plano de jogo",
-        },
-      },
       prerequisites: {
         games:
           "Adicione pelo menos um jogo à lista para atualizar seu cronograma.",
@@ -374,32 +327,6 @@ export const strings = {
       scheduleFailed: "Falha ao gerar o cronograma",
       downloadFailed: "Falha ao baixar o iCal",
       calendarUrlFailed: "Não foi possível copiar a URL do calendário",
-      theme: {
-        label: "Tema",
-        dark: "Escuro",
-        light: "Claro",
-        switchTo: (theme: string) => `Mudar para o tema ${theme.toLowerCase()}`,
-      },
-    },
-    tabs: {
-      nav: "Planeje seu tempo de jogo passo a passo",
-      steps: "Etapas do planejador",
-      addGames: "Montar lista",
-      availability: "Definir rotina",
-      schedule: "Planejar sessões",
-      complete: "Concluída",
-      current: "Etapa atual",
-      notStarted: "Não iniciada",
-      backTo: (label: string) => `Voltar para ${label}`,
-      continueTo: (label: string) => `Continuar para ${label}`,
-      continue: "Continuar",
-      firstStep: "Você está na primeira etapa.",
-      lastStep: "Esta é a última etapa.",
-      gamesRequired:
-        "Adicione e resolva pelo menos um jogo antes de continuar.",
-      availabilityRequired: "Defina seu tempo semanal antes de continuar.",
-      aria: (number: number, label: string, id: string, status: string) =>
-        `Etapa ${number}: ${label} (${id}), ${status}`,
     },
     search: {
       title: "Encontre seus jogos",

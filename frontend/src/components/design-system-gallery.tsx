@@ -189,7 +189,7 @@ export function DesignSystemGallery() {
               ...samples[0],
               name: "The Legend of a Very Long Game Title: Definitive Anniversary Collection",
               cover_url: "",
-              hero_url: null,
+              hero_url: "",
               main_story_hours: null,
               hltb_status: "unresolved",
             }}
@@ -198,7 +198,7 @@ export function DesignSystemGallery() {
             game={{
               ...samples[1],
               cover_url: "/missing-gallery-artwork.jpg",
-              hero_url: null,
+              hero_url: "",
               hltb_status: "loading",
             }}
           />
