@@ -46,73 +46,19 @@ function createCatalogResult(
 }
 
 describe("HomePage", () => {
-  test("defaults to dark theme and lets the user switch to light theme", async () => {
-    const user = userEvent.setup();
-    const view = render(<HomePage path="/" />);
-
-    expect(document.documentElement.dataset.theme).toBe("dark");
-
-    await user.click(
-      view.getByRole("button", { name: /switch to light theme/i }),
-    );
-
-    expect(document.documentElement.dataset.theme).toBe("light");
-    expect(window.localStorage.getItem("gaming-clock-theme")).toBe("light");
-
-    view.unmount();
-    const restoredView = render(<HomePage path="/" />);
-    expect(document.documentElement.dataset.theme).toBe("light");
+  test("opens on game selection with three tabs and no theme controls", () => {
+    window.localStorage.setItem("gaming-clock-theme", "dark");
+    const view = render(<HomePage />);
+    expect(view.getByRole("link", { name: "Asobi" })).toBeTruthy();
+    expect(view.getByRole("region", { name: "Your games" })).toBeTruthy();
+    expect(view.queryByRole("complementary", { name: "Schedule" })).toBeNull();
+    expect(view.getAllByRole("tab")).toHaveLength(3);
     expect(
-      restoredView.getByRole("button", { name: /switch to dark theme/i }),
-    ).toBeTruthy();
-  });
-
-  test("groups aligned theme, language, and backlog controls at the top right", () => {
-    const view = render(<HomePage path="/" />);
-    const controls = view.container.querySelector(".planner-toolbar__controls");
-
-    expect(controls).toBeTruthy();
-    expect(controls?.querySelector(".toolbar-control")).toBeTruthy();
-    expect(view.getByText("Theme")).toBeTruthy();
-    expect(controls?.querySelector(".theme-toggle")).toBeTruthy();
-    expect(controls?.querySelector(".language-chooser")).toBeTruthy();
-    expect(controls?.querySelector(".backlog-manager")).toBeTruthy();
-  });
-
-  test("renders an embossed IntraNet wordmark", () => {
-    const view = render(<HomePage path="/" />);
-
-    expect(view.getByRole("img", { name: "Gaming Clock" })).toBeTruthy();
-    expect(
-      view.container.querySelector(".planner-identity__label")?.textContent,
-    ).toBe("Gaming Clock");
-    expect(view.container.querySelector("canvas")).toBeNull();
-    expect(view.container.querySelector(".planner-brand")).toBeNull();
-  });
-
-  test("guides people through the planner with a clickable progress stepper", async () => {
-    const user = userEvent.setup();
-    const view = render(<HomePage path="/" />);
-
-    expect(
-      view.getByRole("navigation", {
-        name: /plan your game time step by step/i,
-      }),
-    ).toBeTruthy();
-    expect(
-      view.getByRole("tab", { name: /build your list.*current step/i }),
-    ).toBeTruthy();
-    expect(
-      view.getByRole("tab", {
-        name: /set your routine.*not started/i,
-      }),
-    ).toBeTruthy();
-
-    await user.click(view.getByRole("tab", { name: /set your routine/i }));
-
-    expect(
-      view.getByRole("heading", { name: /when do you play\?/i }),
-    ).toBeTruthy();
+      view
+        .getByRole("tab", { name: "Pick games" })
+        .getAttribute("aria-selected"),
+    ).toBe("true");
+    expect(view.queryByRole("button", { name: /switch.*theme/i })).toBeNull();
   });
 
   test("restores planner work after the page reloads", async () => {
@@ -132,8 +78,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const firstView = render(<HomePage path="/" />);
-      const gamesPanel = firstView.getByRole("tabpanel");
+      const firstView = render(<HomePage />);
+      const gamesPanel = firstView.getByRole("region", { name: "Your games" });
       const searchInput = within(gamesPanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -167,11 +113,15 @@ describe("HomePage", () => {
         firstView.getByLabelText(/backlog name/i),
         "Weekend games",
       );
-      await user.click(firstView.getByRole("tab", { name: /availability/i }));
+      await user.click(firstView.getByRole("tab", { name: "Schedule" }));
+      if (firstView.queryByRole("button", { name: /edit hours/i }))
+        await user.click(
+          firstView.getByRole("button", { name: /edit hours/i }),
+        );
       await user.click(
         firstView.getByRole("button", { name: "Monday at 20:00" }),
       );
-      await user.click(firstView.getByRole("tab", { name: /schedule/i }));
+      await user.click(firstView.getByRole("tab", { name: "Schedule" }));
       await user.selectOptions(
         firstView.getByLabelText(/schedule method/i),
         "alternating",
@@ -184,34 +134,34 @@ describe("HomePage", () => {
       );
 
       firstView.unmount();
-      const reloadedView = render(<HomePage path="/" />);
+      const reloadedView = render(<HomePage />);
 
       expect(
-        reloadedView
-          .getByRole("tab", { name: /schedule/i })
-          .getAttribute("aria-selected"),
-      ).toBe("true");
+        reloadedView.getByRole("tabpanel", { name: "Schedule" }),
+      ).toBeTruthy();
       expect(
         reloadedView.getByRole("heading", {
           name: "Weekend games",
           hidden: true,
         }),
       ).toBeTruthy();
-      await user.click(reloadedView.getByRole("tab", { name: /games/i }));
+      await user.click(reloadedView.getByRole("tab", { name: "Pick games" }));
       expect(
         reloadedView.getByRole("button", {
           name: /use main time: 27h 30m/i,
         }),
       ).toBeTruthy();
-      await user.click(
-        reloadedView.getByRole("tab", { name: /availability/i }),
-      );
+      await user.click(reloadedView.getByRole("tab", { name: "Schedule" }));
+      if (reloadedView.queryByRole("button", { name: /edit hours/i }))
+        await user.click(
+          reloadedView.getByRole("button", { name: /edit hours/i }),
+        );
       expect(
         reloadedView.getByRole("button", {
           name: "Monday, 1h from 20:00",
         }),
       ).toBeTruthy();
-      await user.click(reloadedView.getByRole("tab", { name: /schedule/i }));
+      await user.click(reloadedView.getByRole("tab", { name: "Schedule" }));
       expect(
         (reloadedView.getByLabelText(/schedule method/i) as HTMLSelectElement)
           .value,
@@ -248,13 +198,10 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const searchInput = within(view.getByRole("tabpanel")).getByRole(
-        "textbox",
-        {
-          name: /search by title/i,
-        },
-      );
+      const view = render(<HomePage />);
+      const searchInput = within(view.getByRole("main")).getByRole("textbox", {
+        name: /search by title/i,
+      });
       await user.type(searchInput, "ho");
       await waitFor(() =>
         expect(
@@ -269,31 +216,35 @@ describe("HomePage", () => {
 
       await waitFor(() => expect(requests).toContain("/api/games/resolve"));
       expect(
-        within(view.getByRole("tabpanel")).getByText(/retrieving playtime/i),
+        within(view.getByRole("main")).getByText(/retrieving playtime/i),
       ).toBeTruthy();
       expect(
-        within(view.getByRole("tabpanel")).getByText(/^0\.0h$/i),
+        within(view.getByRole("region", { name: "Your games" })).getByText("—"),
       ).toBeTruthy();
 
-      await user.click(view.getByRole("tab", { name: /availability/i }));
+      await user.click(view.getByRole("tab", { name: "Schedule" }));
+      if (view.queryByRole("button", { name: /edit hours/i }))
+        await user.click(view.getByRole("button", { name: /edit hours/i }));
       await user.click(view.getByRole("button", { name: "Monday at 20:00" }));
-      await user.click(view.getByRole("tab", { name: /schedule/i }));
+      await user.click(view.getByRole("tab", { name: "Result" }));
       expect(
-        within(view.getByRole("tabpanel")).getByText(
-          /getting playtime estimates/i,
-        ),
+        within(view.getByRole("main")).getByText(/getting playtime estimates/i),
       ).toBeTruthy();
 
       resolvePlaytime?.(createJsonResponse(resolvedResult));
 
-      await user.click(view.getByRole("tab", { name: /games/i }));
+      await user.click(view.getByRole("tab", { name: "Pick games" }));
       await waitFor(() =>
         expect(
-          within(view.getByRole("tabpanel")).getByText(/^27\.5h$/i),
+          within(view.getByRole("region", { name: "Your games" })).getByText(
+            /^27\.5h$/i,
+          ),
         ).toBeTruthy(),
       );
       expect(
-        within(view.getByRole("tabpanel")).getByText(/^27\.5h$/i),
+        within(view.getByRole("region", { name: "Your games" })).getByText(
+          /^27\.5h$/i,
+        ),
       ).toBeTruthy();
     } finally {
       globalThis.fetch = originalFetch;
@@ -330,8 +281,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const activePanel = view.getByRole("tabpanel");
+      const view = render(<HomePage />);
+      const activePanel = view.getByRole("main");
       const searchInput = within(activePanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -364,7 +315,9 @@ describe("HomePage", () => {
 
       await waitFor(() =>
         expect(
-          activePanel.querySelectorAll(".planner-backlog-row__title"),
+          activePanel.querySelectorAll(
+            ".planner-backlog-row .planner-backlog-row__title",
+          ),
         ).toHaveLength(2),
       );
       expect(
@@ -378,7 +331,9 @@ describe("HomePage", () => {
       );
 
       expect(
-        activePanel.querySelectorAll(".planner-backlog-row__title"),
+        activePanel.querySelectorAll(
+          ".planner-backlog-row .planner-backlog-row__title",
+        ),
       ).toHaveLength(1);
       expect(
         activePanel.querySelector(".planner-backlog-row__title")?.textContent,
@@ -397,7 +352,9 @@ describe("HomePage", () => {
     const originalFetch = globalThis.fetch;
     const catalogResult = createCatalogResult();
     const resolvedResult = createSearchResult();
-    let scheduleRequest: Record<string, unknown> | null = null;
+    const captured: { request: Record<string, unknown> | null } = {
+      request: null,
+    };
 
     globalThis.fetch = (async (
       input: RequestInfo | URL,
@@ -411,7 +368,7 @@ describe("HomePage", () => {
         return createJsonResponse(resolvedResult);
       }
       if (url === "/api/schedule/generate") {
-        scheduleRequest = JSON.parse(String(init?.body ?? "{}")) as Record<
+        captured.request = JSON.parse(String(init?.body ?? "{}")) as Record<
           string,
           unknown
         >;
@@ -425,8 +382,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const gamesPanel = view.getByRole("tabpanel");
+      const view = render(<HomePage />);
+      const gamesPanel = view.getByRole("region", { name: "Your games" });
       const searchInput = within(gamesPanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -472,14 +429,16 @@ describe("HomePage", () => {
           })
           .getAttribute("aria-pressed"),
       ).toBe("true");
-      expect(within(gamesPanel).getByText(/^60\.0h$/i)).toBeTruthy();
+      expect(within(gamesPanel).getByText(/^60h$/i)).toBeTruthy();
 
-      await user.click(view.getByRole("tab", { name: /availability/i }));
+      await user.click(view.getByRole("tab", { name: "Schedule" }));
+      if (view.queryByRole("button", { name: /edit hours/i }))
+        await user.click(view.getByRole("button", { name: /edit hours/i }));
       await user.click(view.getByRole("button", { name: "Monday at 20:00" }));
-      await user.click(view.getByRole("tab", { name: /schedule/i }));
+      await user.click(view.getByRole("tab", { name: "Result" }));
 
-      await waitFor(() => expect(scheduleRequest).not.toBeNull());
-      const requestGames = scheduleRequest?.games as Array<{
+      await waitFor(() => expect(captured.request).not.toBeNull());
+      const requestGames = captured.request?.games as Array<{
         selected_hltb_category?: string;
       }>;
       expect(requestGames[0]?.selected_hltb_category).toBe("completionist");
@@ -487,22 +446,22 @@ describe("HomePage", () => {
       globalThis.fetch = originalFetch;
     }
   });
-  test("renders the tabbed planner shell without the removed landing sections", () => {
-    const view = render(<HomePage path="/" />);
-    const activePanel = view.getByRole("tabpanel");
+  test("renders the dashboard without obsolete landing sections", () => {
+    const view = render(<HomePage />);
+    const activePanel = view.getByRole("main");
 
     expect(view.getByRole("link", { name: /skip to planner/i })).toBeTruthy();
     expect(view.getByRole("main")).toBeTruthy();
     expect(
       view.getByRole("heading", {
         level: 1,
-        name: /what do you want to play/i,
+        name: /your games/i,
       }),
     ).toBeTruthy();
     expect(view.container.querySelector(".backlog-manager")).toBeTruthy();
-    expect(view.getByRole("tab", { name: /games/i })).toBeTruthy();
-    expect(view.getByRole("tab", { name: /availability/i })).toBeTruthy();
-    expect(view.getByRole("tab", { name: /schedule/i })).toBeTruthy();
+    expect(view.getByRole("tab", { name: "Pick games" })).toBeTruthy();
+    expect(view.queryByRole("region", { name: "Availability" })).toBeNull();
+    expect(view.getByRole("tab", { name: "Result" })).toBeTruthy();
     expect(view.queryByText(/gaming backlog planner/i)).toBeNull();
     expect(view.queryByText(/^overview$/i)).toBeNull();
     expect(within(activePanel).getByText(/find your games/i)).toBeTruthy();
@@ -515,41 +474,58 @@ describe("HomePage", () => {
     ).toBeTruthy();
     expect(within(activePanel).queryByText(/^backlog$/i)).toBeNull();
     expect(within(activePanel).queryByText(/weekly cadence/i)).toBeNull();
-    expect(within(activePanel).queryByText(/your schedule/i)).toBeNull();
     expect(
       view.queryByRole("complementary", { name: /planner status/i }),
     ).toBeNull();
   });
 
-  test("switches planner steps manually through the top tabs", async () => {
+  test("navigates with tabs without duplicate bottom navigation", async () => {
     const user = userEvent.setup();
-
-    const view = render(<HomePage path="/" />);
-
-    await user.click(view.getByRole("tab", { name: /availability/i }));
-    let activePanel = view.getByRole("tabpanel");
-    expect(activePanel.id).toBe("planner-panel-availability");
+    const view = render(<HomePage />);
+    expect(view.getByRole("tabpanel", { name: "Pick games" })).toBeTruthy();
     expect(
-      within(activePanel).getByRole("region", { name: /availability/i }),
-    ).toBeTruthy();
-    expect(within(activePanel).queryByText(/find your games/i)).toBeNull();
-
-    await user.click(view.getByRole("tab", { name: /schedule/i }));
-    activePanel = view.getByRole("tabpanel");
-    expect(activePanel.id).toBe("planner-panel-schedule");
-    expect(
-      within(activePanel).getByRole("heading", { name: /date and method/i }),
-    ).toBeTruthy();
-    expect(within(activePanel).queryByText(/weekly cadence/i)).toBeNull();
-    expect(within(activePanel).queryByText(/ready to plan/i)).toBeNull();
-    expect(
-      within(activePanel).queryByText(/before your schedule can update/i),
+      view.queryByRole("button", { name: "Set your schedule" }),
     ).toBeNull();
+    await user.click(view.getByRole("tab", { name: "Schedule" }));
+    expect(view.getByRole("tabpanel", { name: "Schedule" })).toBeTruthy();
+    expect(view.queryByRole("region", { name: "Your games" })).toBeNull();
+    await user.click(view.getByRole("tab", { name: "Result" }));
+    expect(view.getByRole("tabpanel", { name: "Result" })).toBeTruthy();
+    expect(view.getByRole("complementary", { name: "Schedule" })).toBeTruthy();
+    await user.click(view.getByRole("tab", { name: "Schedule" }));
+    expect(view.getByRole("tabpanel", { name: "Schedule" })).toBeTruthy();
+  });
+
+  test("supports arrow, Home and End navigation and restores the selected tab", async () => {
+    const user = userEvent.setup();
+    const view = render(<HomePage />);
+    const games = view.getByRole("tab", { name: "Pick games" });
+    games.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(view.getByRole("tab", { name: "Schedule" })).toBe(
+      document.activeElement,
+    );
+    expect(view.getByRole("tabpanel", { name: "Schedule" })).toBeTruthy();
+    await user.keyboard("{End}");
+    expect(view.getByRole("tab", { name: "Result" })).toBe(
+      document.activeElement,
+    );
+    await user.keyboard("{Home}");
+    expect(games).toBe(document.activeElement);
+    await user.keyboard("{ArrowLeft}");
+    expect(view.getByRole("tab", { name: "Result" })).toBe(
+      document.activeElement,
+    );
+    expect(games.tabIndex).toBe(-1);
+    view.unmount();
+    const restored = render(<HomePage />);
+    expect(restored.getByRole("tabpanel", { name: "Result" })).toBeTruthy();
+    expect(restored.queryByRole("region", { name: "Your games" })).toBeNull();
   });
 
   test("creates a second backlog from the compact backlog manager", async () => {
     const user = userEvent.setup();
-    const view = render(<HomePage path="/" />);
+    const view = render(<HomePage />);
 
     await user.click(view.getByRole("button", { name: /manage backlogs/i }));
     await user.type(view.getByLabelText(/new backlog name/i), "Weekend games");
@@ -561,11 +537,11 @@ describe("HomePage", () => {
     ).toBeTruthy();
   });
 
-  test("preserves step-local draft state when switching tabs", async () => {
+  test("preserves draft state while navigating dashboard sections", async () => {
     const user = userEvent.setup();
 
-    const view = render(<HomePage path="/" />);
-    let activePanel = view.getByRole("tabpanel");
+    const view = render(<HomePage />);
+    let activePanel = view.getByRole("main");
 
     const searchInput = within(activePanel).getByRole("textbox", {
       name: /search by title/i,
@@ -573,95 +549,16 @@ describe("HomePage", () => {
     await user.type(searchInput, "z");
     expect((searchInput as HTMLInputElement).value).toBe("z");
 
-    await user.click(view.getByRole("tab", { name: /availability/i }));
-    await user.click(view.getByRole("tab", { name: /games/i }));
+    await user.click(view.getByRole("tab", { name: "Schedule" }));
+    if (view.queryByRole("button", { name: /edit hours/i }))
+      await user.click(view.getByRole("button", { name: /edit hours/i }));
+    await user.click(view.getByRole("tab", { name: "Pick games" }));
 
-    activePanel = view.getByRole("tabpanel");
+    activePanel = view.getByRole("main");
     const restoredSearchInput = within(activePanel).getByRole("textbox", {
       name: /search by title/i,
     });
     expect((restoredSearchInput as HTMLInputElement).value).toBe("z");
-  });
-
-  test("supports horizontal keyboard navigation for the stage tablist", async () => {
-    const user = userEvent.setup();
-
-    const view = render(<HomePage path="/" />);
-    const gamesTab = view.getByRole("tab", { name: /games/i });
-    const availabilityTab = view.getByRole("tab", { name: /availability/i });
-    const scheduleTab = view.getByRole("tab", { name: /schedule/i });
-
-    expect(view.getByRole("tablist").getAttribute("aria-orientation")).toBe(
-      "horizontal",
-    );
-
-    expect(gamesTab.getAttribute("tabindex")).toBe("0");
-    expect(availabilityTab.getAttribute("tabindex")).toBe("-1");
-    expect(scheduleTab.getAttribute("tabindex")).toBe("-1");
-
-    gamesTab.focus();
-    expect(document.activeElement).toBe(gamesTab);
-
-    await user.keyboard("{ArrowRight}");
-    expect(document.activeElement).toBe(availabilityTab);
-    expect(availabilityTab.getAttribute("aria-selected")).toBe("true");
-    expect(availabilityTab.getAttribute("tabindex")).toBe("0");
-    expect(view.getByRole("tabpanel").id).toBe("planner-panel-availability");
-
-    await user.keyboard("{End}");
-    expect(document.activeElement).toBe(scheduleTab);
-    expect(scheduleTab.getAttribute("aria-selected")).toBe("true");
-    expect(scheduleTab.getAttribute("tabindex")).toBe("0");
-    expect(view.getByRole("tabpanel").id).toBe("planner-panel-schedule");
-
-    await user.keyboard("{Home}");
-    expect(document.activeElement).toBe(gamesTab);
-    expect(gamesTab.getAttribute("aria-selected")).toBe("true");
-    expect(gamesTab.getAttribute("tabindex")).toBe("0");
-    expect(view.getByRole("tabpanel").id).toBe("planner-panel-games");
-
-    await user.keyboard("{ArrowLeft}");
-    expect(document.activeElement).toBe(scheduleTab);
-    expect(scheduleTab.getAttribute("aria-selected")).toBe("true");
-    expect(scheduleTab.getAttribute("tabindex")).toBe("0");
-    expect(view.getByRole("tabpanel").id).toBe("planner-panel-schedule");
-  });
-
-  test("shows stage actions with prerequisite guidance", async () => {
-    const user = userEvent.setup();
-
-    const view = render(<HomePage path="/" />);
-    const gamesBack = view.getByRole("button", {
-      name: /back to build your list/i,
-    });
-    const gamesContinue = view.getByRole("button", {
-      name: /continue to set your routine/i,
-    });
-
-    expect(gamesBack.getAttribute("title")).toMatch(/first step/i);
-    expect(gamesContinue.hasAttribute("disabled")).toBe(true);
-    expect(gamesContinue.getAttribute("title")).toMatch(
-      /add and resolve at least one game before continuing/i,
-    );
-    expect(view.getByText(/you are at the first step/i)).toBeTruthy();
-
-    await user.click(view.getByRole("tab", { name: /availability/i }));
-
-    const availabilityContinue = view.getByRole("button", {
-      name: /continue to plan sessions/i,
-    });
-    expect(
-      view.getByRole("button", { name: /back to build your list/i }),
-    ).toBeTruthy();
-    expect(availabilityContinue.hasAttribute("disabled")).toBe(true);
-    expect(availabilityContinue.getAttribute("title")).toMatch(
-      /set your weekly play time before continuing/i,
-    );
-
-    await user.click(view.getByRole("tab", { name: /schedule/i }));
-    const finalContinue = view.getByRole("button", { name: /^continue$/i });
-    expect(finalContinue.hasAttribute("disabled")).toBe(true);
-    expect(finalContinue.getAttribute("title")).toMatch(/final step/i);
   });
 
   test("initializes start date from the local calendar day instead of UTC ISO date", async () => {
@@ -697,13 +594,13 @@ describe("HomePage", () => {
     globalThis.Date = MockDate as unknown as DateConstructor;
 
     try {
-      const view = render(<HomePage path="/" />);
+      const view = render(<HomePage />);
 
-      await user.click(view.getByRole("tab", { name: /schedule/i }));
+      await user.click(view.getByRole("tab", { name: "Result" }));
 
       expect(
         (
-          within(view.getByRole("tabpanel")).getByLabelText(
+          within(view.getByRole("main")).getByLabelText(
             /start date/i,
           ) as HTMLInputElement
         ).value,
@@ -729,8 +626,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const activePanel = view.getByRole("tabpanel");
+      const view = render(<HomePage />);
+      const activePanel = view.getByRole("main");
       const searchInput = within(activePanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -748,7 +645,9 @@ describe("HomePage", () => {
   test("sends the selected weekly start time when the live schedule updates", async () => {
     const user = userEvent.setup();
     const originalFetch = globalThis.fetch;
-    let scheduleRequest: Record<string, unknown> | null = null;
+    const captured: { request: Record<string, unknown> | null } = {
+      request: null,
+    };
 
     const searchResult = createSearchResult();
 
@@ -780,7 +679,7 @@ describe("HomePage", () => {
       }
 
       if (url === "/api/schedule/generate") {
-        scheduleRequest = JSON.parse(String(init?.body ?? "{}")) as Record<
+        captured.request = JSON.parse(String(init?.body ?? "{}")) as Record<
           string,
           unknown
         >;
@@ -791,8 +690,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const gamesPanel = view.getByRole("tabpanel");
+      const view = render(<HomePage />);
+      const gamesPanel = view.getByRole("region", { name: "Your games" });
       const searchInput = within(gamesPanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -815,9 +714,11 @@ describe("HomePage", () => {
         ).toBeTruthy(),
       );
 
-      await user.click(view.getByRole("tab", { name: /availability/i }));
+      await user.click(view.getByRole("tab", { name: "Schedule" }));
+      if (view.queryByRole("button", { name: /edit hours/i }))
+        await user.click(view.getByRole("button", { name: /edit hours/i }));
 
-      const availabilityPanel = view.getByRole("tabpanel");
+      const availabilityPanel = view.getByRole("main");
       await user.click(
         within(availabilityPanel).getByRole("button", {
           name: "Monday at 18:30",
@@ -830,11 +731,11 @@ describe("HomePage", () => {
       );
       await user.keyboard("{Shift>}{ArrowDown}{ArrowDown}{/Shift}");
 
-      await user.click(view.getByRole("tab", { name: /schedule/i }));
+      await user.click(view.getByRole("tab", { name: "Result" }));
 
-      await waitFor(() => expect(scheduleRequest).not.toBeNull());
+      await waitFor(() => expect(captured.request).not.toBeNull());
 
-      const requestAvailability = scheduleRequest?.availability as {
+      const requestAvailability = captured.request?.availability as {
         days: Array<{
           day_of_week: number;
           hours: number;
@@ -852,7 +753,9 @@ describe("HomePage", () => {
         },
       ]);
       expect(
-        within(view.getByRole("tabpanel")).getByText(/^18:30$/),
+        within(view.getByRole("region", { name: "Session agenda" })).getByText(
+          /^18:30$/,
+        ),
       ).toBeTruthy();
     } finally {
       globalThis.fetch = originalFetch;
@@ -861,25 +764,25 @@ describe("HomePage", () => {
 
   test("shows only the current-list hours and missing schedule prerequisites", async () => {
     const user = userEvent.setup();
-    const view = render(<HomePage path="/" />);
+    const view = render(<HomePage />);
 
     expect(
       view.queryByRole("complementary", { name: /planner status/i }),
     ).toBeNull();
     expect(
-      within(view.getByRole("tabpanel")).getByText(/^0\.0h$/i),
+      within(view.getByRole("main")).getByText(/^0\.0\s*h$/i),
     ).toBeTruthy();
     expect(view.queryByText(/availability status/i)).toBeNull();
 
-    await user.click(view.getByRole("tab", { name: /schedule/i }));
+    await user.click(view.getByRole("tab", { name: "Result" }));
 
-    const activePanel = view.getByRole("tabpanel");
+    const activePanel = view.getByRole("main");
     expect(
-      within(activePanel).getByText(/add at least one game to the backlog/i),
+      within(activePanel).getByText(
+        /add games in pick games and set your availability in schedule/i,
+      ),
     ).toBeTruthy();
-    expect(
-      within(activePanel).getByText(/set your weekly availability/i),
-    ).toBeTruthy();
+    expect(within(activePanel).getByText(/0 hours per week/i)).toBeTruthy();
   });
 
   test("schedules available games while naming games without HLTB playtime", async () => {
@@ -919,8 +822,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const activePanel = view.getByRole("tabpanel");
+      const view = render(<HomePage />);
+      const activePanel = view.getByRole("main");
       const searchInput = within(activePanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -946,13 +849,15 @@ describe("HomePage", () => {
         activePanel.querySelector(".planner-backlog-row__title")?.textContent,
       ).toBe("Hollow Knight");
 
-      await user.click(view.getByRole("tab", { name: /availability/i }));
+      await user.click(view.getByRole("tab", { name: "Schedule" }));
+      if (view.queryByRole("button", { name: /edit hours/i }))
+        await user.click(view.getByRole("button", { name: /edit hours/i }));
       await user.click(view.getByRole("button", { name: "Monday at 20:00" }));
-      await user.click(view.getByRole("tab", { name: /schedule/i }));
+      await user.click(view.getByRole("tab", { name: "Result" }));
 
       await waitFor(() => expect(scheduleGenerated).toBe(true));
       expect(
-        within(view.getByRole("tabpanel")).getByText(
+        within(view.getByRole("main")).getByText(
           /hollow knight does not have hltb playtime data/i,
         ),
       ).toBeTruthy();
@@ -996,8 +901,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const gamesPanel = view.getByRole("tabpanel");
+      const view = render(<HomePage />);
+      const gamesPanel = view.getByRole("region", { name: "Your games" });
       const searchInput = within(gamesPanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -1020,9 +925,10 @@ describe("HomePage", () => {
       );
 
       const originalCoverUrl = view.container
-        .querySelector(".planner-backlog-row .game-cartridge__cover")
+        .querySelector(".planner-backlog-row .game-cartridge__hero")
         ?.getAttribute("src");
 
+      expect(originalCoverUrl).toBeTruthy();
       await user.click(
         within(gamesPanel).getByRole("button", {
           name: /retry hollow knight playtime/i,
@@ -1034,7 +940,7 @@ describe("HomePage", () => {
       );
       expect(
         view.container
-          .querySelector(".planner-backlog-row .game-cartridge__cover")
+          .querySelector(".planner-backlog-row .game-cartridge__hero")
           ?.getAttribute("src"),
       ).toBe(originalCoverUrl);
       expect(resolveAttempt).toBe(2);
@@ -1070,8 +976,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const gamesPanel = view.getByRole("tabpanel");
+      const view = render(<HomePage />);
+      const gamesPanel = view.getByRole("region", { name: "Your games" });
       const searchInput = within(gamesPanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -1161,8 +1067,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const gamesPanel = view.getByRole("tabpanel");
+      const view = render(<HomePage />);
+      const gamesPanel = view.getByRole("region", { name: "Your games" });
       const searchInput = within(gamesPanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -1189,23 +1095,27 @@ describe("HomePage", () => {
         expect(view.getByRole("heading", { name: /my backlog/i })).toBeTruthy(),
       );
 
-      await user.click(view.getByRole("tab", { name: /availability/i }));
+      await user.click(view.getByRole("tab", { name: "Schedule" }));
+      if (view.queryByRole("button", { name: /edit hours/i }))
+        await user.click(view.getByRole("button", { name: /edit hours/i }));
       await user.click(view.getByRole("button", { name: "Monday at 20:00" }));
 
-      await user.click(view.getByRole("tab", { name: /schedule/i }));
+      await user.click(view.getByRole("tab", { name: "Result" }));
 
       await waitFor(() =>
         expect(view.container.querySelector("#schedule-heading")).toBeTruthy(),
       );
 
-      const schedulePanel = view.getByRole("tabpanel");
+      const schedulePanel = view.getByRole("region", {
+        name: "Session agenda",
+      });
       expect(
         within(schedulePanel).getByText(/total planned hours/i),
       ).toBeTruthy();
       expect(within(schedulePanel).getByText(/estimated finish/i)).toBeTruthy();
       const sessionsMetric = within(schedulePanel)
         .getByText(/^sessions$/i)
-        .closest(".planner-metric");
+        .closest<HTMLElement>(".planner-metric");
       expect(sessionsMetric).toBeTruthy();
       if (!sessionsMetric) {
         throw new Error("Sessions metric is missing its metric container");
@@ -1262,8 +1172,8 @@ describe("HomePage", () => {
     }) as typeof fetch;
 
     try {
-      const view = render(<HomePage path="/" />);
-      const gamesPanel = view.getByRole("tabpanel");
+      const view = render(<HomePage />);
+      const gamesPanel = view.getByRole("region", { name: "Your games" });
       const searchInput = within(gamesPanel).getByRole("textbox", {
         name: /search by title/i,
       });
@@ -1290,12 +1200,14 @@ describe("HomePage", () => {
         expect(view.getByRole("heading", { name: /my backlog/i })).toBeTruthy(),
       );
 
-      await user.click(view.getByRole("tab", { name: /availability/i }));
+      await user.click(view.getByRole("tab", { name: "Schedule" }));
+      if (view.queryByRole("button", { name: /edit hours/i }))
+        await user.click(view.getByRole("button", { name: /edit hours/i }));
       await user.click(view.getByRole("button", { name: "Monday at 20:00" }));
 
-      await user.click(view.getByRole("tab", { name: /schedule/i }));
+      await user.click(view.getByRole("tab", { name: "Result" }));
 
-      const schedulePanel = () => view.getByRole("tabpanel");
+      const schedulePanel = () => view.getByRole("main");
       await waitFor(() =>
         expect(view.container.querySelector("#schedule-heading")).toBeTruthy(),
       );

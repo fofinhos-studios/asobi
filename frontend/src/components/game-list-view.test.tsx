@@ -9,9 +9,9 @@ import { GameListView } from "./game-list-view";
 const game: ListGame = {
   igdb_id: 1,
   name: "Hollow Knight",
-  cover_url: null,
-  logo_url: null,
-  hero_url: null,
+  cover_url: "",
+  logo_url: "",
+  hero_url: "",
   summary: "",
   genres: [],
   platforms: [],

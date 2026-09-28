@@ -1,9 +1,11 @@
 import datetime
 
 import pytest
+from pydantic import ValidationError
 
 from gamingclock.models.catalog import HLTBStatus, ListGame
 from gamingclock.models.schedule import (
+    CalendarUrlRequest,
     DayAvailability,
     PlanningMode,
     PlaySession,
@@ -88,14 +90,19 @@ def test_schedule_request():
     assert req.availability.days[0].start_hour == 20
 
 
+def test_schedule_request_start_date_uses_a_factory():
+    field = ScheduleRequest.model_fields["start_date"]
+
+    assert field.default_factory is not None
+    assert field.default_factory() == datetime.date.today()
+
+
 def test_finish_by_request_requires_a_valid_deadline():
     with pytest.raises(ValueError, match="finish_by_date is required"):
         ScheduleRequest(
             game_list_name="My List",
             games=[],
-            availability=WeeklyAvailability(
-                days=[DayAvailability(day_of_week=0, hours=2)]
-            ),
+            availability=WeeklyAvailability(days=[DayAvailability(day_of_week=0, hours=2)]),
             planning_mode=PlanningMode.FINISH_BY,
             start_date=datetime.date(2026, 4, 1),
         )
@@ -103,9 +110,7 @@ def test_finish_by_request_requires_a_valid_deadline():
         ScheduleRequest(
             game_list_name="My List",
             games=[],
-            availability=WeeklyAvailability(
-                days=[DayAvailability(day_of_week=0, hours=2)]
-            ),
+            availability=WeeklyAvailability(days=[DayAvailability(day_of_week=0, hours=2)]),
             planning_mode=PlanningMode.FINISH_BY,
             start_date=datetime.date(2026, 4, 1),
             finish_by_date=datetime.date(2026, 3, 31),
@@ -134,3 +139,140 @@ def test_schedule_response_is_a_pydantic_model():
         "total_hours": 0,
         "estimated_end_date": None,
     }
+
+
+def test_schedule_request_rejects_oversized_game_lists_and_names():
+    with pytest.raises(ValidationError, match="game_list_name"):
+        ScheduleRequest(
+            game_list_name="x" * 201,
+            games=[],
+            availability=WeeklyAvailability(days=[DayAvailability(day_of_week=0, hours=2)]),
+        )
+
+    with pytest.raises(ValidationError, match="games"):
+        ScheduleRequest(
+            game_list_name="My List",
+            games=[
+                ListGame(
+                    igdb_id=index + 1,
+                    name="Game",
+                    cover_url="",
+                    summary="",
+                    genres=[],
+                    platforms=[],
+                    hltb_status=HLTBStatus.UNRESOLVED,
+                )
+                for index in range(501)
+            ],
+            availability=WeeklyAvailability(days=[DayAvailability(day_of_week=0, hours=2)]),
+        )
+
+
+def test_calendar_url_request_rejects_oversized_session_lists():
+    with pytest.raises(ValidationError, match="sessions"):
+        CalendarUrlRequest(
+            game_list_name="My List",
+            sessions=[
+                PlaySession(
+                    game_name="Game", date=datetime.date(2026, 4, 1), start_time=datetime.time(20), duration_hours=2
+                )
+            ]
+            * 501,
+        )
+
+
+@pytest.mark.parametrize(
+    ("model", "payload"),
+    [
+        (DayAvailability, {"day_of_week": 0, "hours": 2, "unexpected": True}),
+        (
+            ScheduleRequest,
+            {
+                "game_list_name": "My List",
+                "games": [],
+                "availability": {"days": [{"day_of_week": 0, "hours": 2}]},
+                "unexpected": True,
+            },
+        ),
+        (
+            PlaySession,
+            {
+                "game_name": "Game",
+                "date": "2026-04-01",
+                "start_time": "20:00:00",
+                "duration_hours": 2,
+                "unexpected": True,
+            },
+        ),
+        (
+            CalendarUrlRequest,
+            {
+                "game_list_name": "My List",
+                "sessions": [],
+                "unexpected": True,
+            },
+        ),
+        (
+            ScheduleRequest,
+            {
+                "game_list_name": "My List",
+                "games": [
+                    {
+                        "igdb_id": 1,
+                        "name": "Game",
+                        "cover_url": "",
+                        "summary": "",
+                        "genres": [],
+                        "platforms": [],
+                        "hltb_status": "unresolved",
+                        "unexpected": True,
+                    }
+                ],
+                "availability": {"days": [{"day_of_week": 0, "hours": 2}]},
+            },
+        ),
+    ],
+)
+def test_scheduling_models_reject_unknown_fields(model, payload):
+    with pytest.raises(ValidationError, match="extra_forbidden"):
+        model.model_validate(payload)
+
+
+@pytest.mark.parametrize("hours", [0, -1, 24.1, float("inf"), float("nan")])
+def test_day_availability_rejects_invalid_or_non_finite_hours(hours):
+    with pytest.raises(ValidationError, match="hours"):
+        DayAvailability(day_of_week=0, hours=hours)
+
+
+@pytest.mark.parametrize("hours", [0, -1, 24.1, float("inf"), float("nan")])
+def test_play_session_rejects_invalid_or_non_finite_durations(hours):
+    with pytest.raises(ValidationError, match="duration_hours"):
+        PlaySession(
+            game_name="FF7",
+            date=datetime.date(2026, 4, 1),
+            start_time=datetime.time(20, 0),
+            duration_hours=hours,
+        )
+
+
+@pytest.mark.parametrize("hours", [0, -1, 10_000.1, float("inf"), float("nan")])
+def test_games_reject_invalid_or_non_finite_playtime(hours):
+    with pytest.raises(ValidationError, match="main_story_hours"):
+        ListGame(
+            igdb_id=7,
+            name="FF7",
+            cover_url="",
+            summary="Classic RPG",
+            genres=["RPG"],
+            platforms=["PlayStation"],
+            hltb_status=HLTBStatus.RESOLVED,
+            main_story_hours=hours,
+        )
+
+
+def test_weekly_availability_accepts_multiple_periods_per_day():
+    availability = WeeklyAvailability(
+        days=[DayAvailability(day_of_week=day, hours=1, start_hour=hour) for day in range(7) for hour in (12, 20)]
+    )
+    assert len(availability.days) == 14
+    assert availability.total_weekly_hours == 14

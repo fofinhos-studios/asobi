@@ -4,6 +4,7 @@ import type { CatalogGame, ListGame, WeeklyAvailability } from "../types";
 import {
   ApiError,
   createCalendarUrl,
+  downloadIcal,
   generateSchedule,
   getApiErrorMessage,
   getGameArtwork,
@@ -187,4 +188,41 @@ describe("api client errors and contracts", () => {
       sessions: [{ game_name: "Final Fantasy VII", date: "2026-08-22" }],
     });
   });
+});
+
+test("schedule and export omit client-only metadata from saved games", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      sessions: [],
+      total_hours: 0,
+      estimated_end_date: null,
+    }),
+    blob: async () => new Blob([]),
+  });
+  globalThis.fetch = fetchMock as typeof fetch;
+  const savedGame = {
+    ...listGame,
+    added_individually: true,
+    group_keys: ["series:test"],
+    hltb_error: null,
+    variants: [],
+  };
+  await generateSchedule(
+    "Test",
+    [savedGame],
+    availability,
+    "sequential",
+    "2026-09-28",
+  );
+  await downloadIcal(
+    "Test",
+    [savedGame],
+    availability,
+    "sequential",
+    "2026-09-28",
+  );
+  for (const [, options] of fetchMock.mock.calls) {
+    expect(JSON.parse(options.body).games).toEqual([listGame]);
+  }
 });

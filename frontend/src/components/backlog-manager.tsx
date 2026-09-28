@@ -25,7 +25,6 @@ export function BacklogManager({
   const [newBacklogName, setNewBacklogName] = useState("");
   const activeBacklog =
     backlogs.find((backlog) => backlog.id === activeBacklogId) ?? backlogs[0];
-  const activeHours = getBacklogHours(activeBacklog);
 
   const createBacklog = () => {
     const name = newBacklogName.trim();
@@ -56,12 +55,6 @@ export function BacklogManager({
           <span class="backlog-manager__current-name">
             {activeBacklog.name}
           </span>
-          <span class="backlog-manager__meta">
-            {t.app.backlogStats(
-              activeBacklog.games.length,
-              activeHours.toFixed(1),
-            )}
-          </span>
         </Button>
       </div>
 
@@ -69,7 +62,6 @@ export function BacklogManager({
         <div id="backlog-manager-panel" class="backlog-manager__panel">
           <div class="backlog-manager__panel-heading">
             <div>
-              <p class="backlog-manager__label">{t.app.backlogs}</p>
               <h2>{t.app.backlogs}</h2>
             </div>
           </div>

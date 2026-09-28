@@ -115,11 +115,46 @@ describe("GameSearch", () => {
         view.container.querySelector(".planner-result__artwork-loading"),
       ).toBeNull(),
     );
-    expect(
-      view.container
-        .querySelector(".platform-icons__icon")
-        ?.getAttribute("src"),
-    ).toContain("/platform-icons/Windows.png");
+    expect(view.container.querySelector(".platform-icons")).toBeNull();
+    expect(view.queryByText("PC")).toBeNull();
+  });
+
+  test("uses the alternate cover when a search result image fails", async () => {
+    vi.mocked(searchGames).mockResolvedValue([
+      {
+        igdb_id: 7,
+        name: "Dragon Quest XI",
+        cover_url:
+          "https://images.igdb.com/igdb/image/upload/t_thumb/dragon-quest.jpg",
+        summary: "",
+        genres: [],
+        platforms: [],
+        release_year: 2017,
+        rating: 88.4,
+      },
+    ]);
+    vi.mocked(getGameArtwork).mockResolvedValue({
+      cover_url: "https://cdn.example/dragon-quest-cover.jpg",
+      logo_url: "",
+      hero_url: "",
+    });
+    const view = render(
+      <LanguageProvider browserLanguages={["en"]}>
+        <GameSearch games={[]} onAddGame={vi.fn()} />
+      </LanguageProvider>,
+    );
+
+    await userEvent
+      .setup()
+      .type(view.getByRole("textbox", { name: /search by title/i }), "dragon");
+    const cover = await view.findByAltText("Dragon Quest XI");
+    fireEvent.error(cover);
+
+    await waitFor(() =>
+      expect(view.getByAltText("Dragon Quest XI").getAttribute("src")).toBe(
+        "https://cdn.example/dragon-quest-cover.jpg",
+      ),
+    );
   });
 
   test("uses the alternate cover when a search result image fails", async () => {
@@ -240,7 +275,8 @@ describe("GameSearch", () => {
     const versionButton = await view.findByRole("button", {
       name: "Add Chrono Trigger (Expanded version) to backlog",
     });
-    expect(view.getByText("Nintendo DS · 2008")).toBeTruthy();
+    expect(view.getByText("2008")).toBeTruthy();
+    expect(view.queryByText(/Nintendo DS/)).toBeNull();
 
     await user.click(versionButton);
 

@@ -8,13 +8,18 @@ import {
   ListBulletsIcon,
   PencilSimpleIcon,
   TrashIcon,
-  TrophyIcon,
 } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { GAME_GROUPS_ENABLED } from "../config/features";
 import { useLanguage } from "../i18n/i18n";
-import type { GameGroupImport, HLTBCategory, ListGame } from "../types";
+import {
+  type GameGroupImport,
+  type HLTBCategory,
+  type ListGame,
+  getSelectedGameHours,
+} from "../types";
 import { GameCartridge } from "./game-cartridge";
+import { gameVisualStyle } from "./game-visuals";
 import { Button } from "./ui";
 
 interface Props {
@@ -161,23 +166,26 @@ export function GameListView({
         </div>
         <div class="planner-inline-stats">
           <span>{t.list.count(games.length)}</span>
-          {games.length === 0 && <span>0.0h</span>}
+          <span aria-hidden="true">·</span>
+          <span>
+            {games
+              .reduce((total, game) => total + getSelectedGameHours(game), 0)
+              .toFixed(1)}
+            {"\u00a0h"}
+          </span>
         </div>
       </div>
 
       {games.length === 0 ? (
         <div class="planner-empty-state">
-          <TrophyIcon
-            class="planner-icon planner-empty-state__icon"
-            aria-hidden="true"
-          />
-          <p class="planner-empty-state__title">{t.list.emptyTitle}</p>
+          <p>{t.asobi.empty}</p>
         </div>
       ) : (
         <div class="planner-backlog-list">
           {games.map((game, index) => (
             <article
               key={game.igdb_id}
+              style={gameVisualStyle(game.igdb_id)}
               class={`planner-backlog-row${
                 draggedIndex === index ? " planner-backlog-row--dragging" : ""
               }${
@@ -226,6 +234,10 @@ export function GameListView({
               }}
               onDragEnd={resetDragState}
             >
+              <span class="asobi-game-number">
+                <span class="sr-only">{t.asobi.position} </span>
+                {String(index + 1).padStart(2, "0")}
+              </span>
               <GameCartridge game={game} />
               {GAME_GROUPS_ENABLED &&
                 game.group_import_ids?.[0] &&

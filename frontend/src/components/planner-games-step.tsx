@@ -2,6 +2,7 @@ import type {
   CatalogGame,
   GameGroupImport,
   GameGroupPreview,
+  GameGroupSelectionResolution,
   HLTBCategory,
   ListGame,
 } from "../types";
@@ -15,7 +16,7 @@ interface Props {
   onAddGame: (game: CatalogGame) => void;
   onAddGameGroup: (
     preview: GameGroupPreview,
-    selectedIgdbIds: number[],
+    resolutions: GameGroupSelectionResolution[],
   ) => Promise<void>;
   onSelectGameTime: (index: number, category: HLTBCategory) => void;
   onRemoveGame: (igdbId: number) => void;

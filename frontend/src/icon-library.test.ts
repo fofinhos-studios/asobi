@@ -8,10 +8,8 @@ const iconConsumers = [
   "src/components/backlog-manager.tsx",
   "src/components/game-list-view.tsx",
   "src/components/game-search.tsx",
-  "src/components/planner-availability-step.tsx",
-  "src/components/planner-schedule-step.tsx",
-  "src/components/planner-step-actions.tsx",
-  "src/components/planner-tabs.tsx",
+  "src/components/planner-controls.tsx",
+  "src/components/game-route.tsx",
   "src/components/schedule-view.tsx",
   "src/pages/home.tsx",
 ];

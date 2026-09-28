@@ -26,9 +26,7 @@ import type {
   GameGroupSelectionResolution,
   ListGame,
 } from "../types";
-import { PlatformIcons } from "./platform-icons";
 import { Button, Field, Input } from "./ui";
-import "./game-groups.css";
 
 interface Props {
   games: ListGame[];
@@ -1035,17 +1033,6 @@ function SearchResultCartridge({
         {isArtworkReady ? (
           <div class="planner-result__details">
             <p class="planner-result__detail">
-              {game.platforms.length > 0 ? (
-                <PlatformIcons
-                  class="planner-result__platforms"
-                  platforms={game.platforms}
-                  maxIcons={3}
-                />
-              ) : (
-                t.search.platformsUnavailable
-              )}
-            </p>
-            <p class="planner-result__detail">
               {game.genres.length > 0
                 ? game.genres.join(", ")
                 : t.search.genresUnavailable}
@@ -1110,10 +1097,7 @@ function SearchResultVariant({
       <span class="planner-result-variant__type">{type}</span>
       <span class="planner-result-variant__title">{title}</span>
       <span class="planner-result-variant__meta">
-        {variant.platforms.length > 0
-          ? variant.platforms.join(", ")
-          : t.search.platformsUnavailable}
-        {variant.release_year === null ? "" : ` · ${variant.release_year}`}
+        {variant.release_year ?? ""}
       </span>
       {(isAdding || isAdded) && (
         <span class="planner-result-variant__feedback">

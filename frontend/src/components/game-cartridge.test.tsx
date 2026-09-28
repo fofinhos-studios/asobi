@@ -30,8 +30,6 @@ describe("GameCartridge", () => {
     fireEvent.load(
       view.container.querySelector(".game-cartridge__hero") as HTMLImageElement,
     );
-    fireEvent.load(view.getByAltText("Hollow Knight cover"));
-    fireEvent.load(view.getByAltText("Hollow Knight logo"));
 
     await waitFor(() =>
       expect(
@@ -42,7 +40,7 @@ describe("GameCartridge", () => {
     );
   });
 
-  test("reveals hero, logo, cover, and a playtime nutrition label once artwork is ready", async () => {
+  test("renders readable spine content and settles after its background loads", async () => {
     const view = render(<GameCartridge game={game} />);
 
     expect(view.getByLabelText(/loading hollow knight artwork/i)).toBeTruthy();
@@ -55,8 +53,6 @@ describe("GameCartridge", () => {
     fireEvent.load(
       view.container.querySelector(".game-cartridge__hero") as HTMLImageElement,
     );
-    fireEvent.load(view.getByAltText("Hollow Knight cover"));
-    fireEvent.load(view.getByAltText("Hollow Knight logo"));
 
     await waitFor(() =>
       expect(
@@ -65,27 +61,17 @@ describe("GameCartridge", () => {
           ?.getAttribute("aria-busy"),
       ).toBe("false"),
     );
-    expect(view.getByAltText("Hollow Knight logo")).toBeTruthy();
     expect(view.getByRole("heading", { name: "Hollow Knight" })).toBeTruthy();
-    expect(view.getByAltText("Hollow Knight cover")).toBeTruthy();
     expect(
       view.container
         .querySelector(".game-cartridge__hero")
         ?.getAttribute("src"),
     ).toBe(game.hero_url);
-    expect(view.getByText("PLAY TIME")).toBeTruthy();
-    expect(view.getByText("27.5H")).toBeTruthy();
-    expect(
-      view.container
-        .querySelector(".platform-icons__icon")
-        ?.getAttribute("src"),
-    ).toContain("/platform-icons/Windows.png");
-    expect(
-      view.container
-        .querySelector(".game-cartridge__identity")
-        ?.querySelector(".game-cartridge__platforms"),
-    ).toBeTruthy();
-    expect(view.getByText("GENRE")).toBeTruthy();
+    expect(view.getByText("Play time")).toBeTruthy();
+    expect(view.getByText("27.5h")).toBeTruthy();
+    expect(view.container.querySelector(".platform-icons")).toBeNull();
+    expect(view.queryByText("PC")).toBeNull();
+    expect(view.getByText("Genre")).toBeTruthy();
     expect(view.getByText("Adventure")).toBeTruthy();
   });
 
@@ -99,8 +85,6 @@ describe("GameCartridge", () => {
 
     await waitFor(() => expect(hero.getAttribute("src")).toBe(game.cover_url));
     fireEvent.load(hero);
-    fireEvent.load(view.getByAltText("Hollow Knight cover"));
-    fireEvent.load(view.getByAltText("Hollow Knight logo"));
 
     await waitFor(() =>
       expect(
@@ -126,7 +110,7 @@ describe("GameCartridge", () => {
       <GameCartridge game={game} plannedHours={2.5} variant="calendar" />,
     );
 
-    expect(view.getByText("2.5H")).toBeTruthy();
+    expect(view.getByText("2.5h")).toBeTruthy();
     const primaryDetail = view
       .getByLabelText("Hollow Knight details")
       .querySelector("div");
