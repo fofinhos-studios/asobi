@@ -29,9 +29,7 @@
   --glass-card-start: #ffffffeb;
   --glass-card-middle: #ffffffc2;
   --glass-card-end: #ffffff7a;
-  --glass-logo: #ffffffbd;
   --glass-controls: #ffffffb3;
-  --shadow-soft: #00000038;
   --concrete: #eceeef;
   --gray: #60656b;
   --orange: #ff743d;
@@ -100,6 +98,7 @@
   --art-opacity: 0.08;
   --spine-art-opacity: 0.24;
   --spine-height: 5.5rem;
+  --backlog-spine-height: 7rem;
   --spine-compact-height: 4rem;
   --station-size: 2rem;
   --radius-circle: 50%;
@@ -808,6 +807,8 @@ dd {
 .planner-backlog-row > .game-cartridge {
   position: static;
   isolation: auto;
+  min-height: var(--backlog-spine-height);
+  padding-block: var(--space-4);
   background: transparent;
   overflow: visible;
   padding-left: calc(var(--space-6) + var(--station-size));
@@ -839,7 +840,7 @@ dd {
 }
 .planner-backlog-row > .game-cartridge .game-cartridge__wash {
   bottom: auto;
-  height: var(--spine-height);
+  height: var(--backlog-spine-height);
 }
 .game-cartridge__content {
   position: relative;
@@ -856,23 +857,20 @@ dd {
   grid-row: 1;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 .game-cartridge__logo {
   flex: 0 1 auto;
+  display: block;
   min-width: 0;
   width: auto;
-  max-width: clamp(6rem, 14vw, 12rem);
-  height: 2.75rem;
-  max-height: 2.75rem;
+  max-width: clamp(6rem, 12vw, 10rem);
+  height: auto;
+  max-height: 3rem;
   object-fit: contain;
   object-position: left center;
-  padding: var(--space-1) var(--space-2);
-  border: var(--rule-soft);
-  background: var(--glass-logo);
-  filter: drop-shadow(0 1px 1px var(--shadow-soft));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  padding: var(--space-2) var(--space-3);
+  background: var(--ink);
 }
 .game-cartridge--calendar .game-cartridge__logo,
 .game-cartridge--spine .game-cartridge__logo {
@@ -925,6 +923,7 @@ dd {
   gap: var(--space-1);
   grid-row: 2;
   grid-column: 1;
+  padding-top: var(--space-1);
 }
 .game-cartridge--backlog .game-cartridge__label > div:nth-child(2) dd {
   font-size: var(--text-xs);
